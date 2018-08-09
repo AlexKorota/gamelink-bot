@@ -3,12 +3,25 @@ package main
 import (
 	"gamelinkBot/service"
 	"github.com/Syfaro/telegram-bot-api"
+	"google.golang.org/grpc"
 	"log"
 	"reflect"
 	"strings"
 )
 
 func main() {
+	var conn *grpc.ClientConn
+
+	conn, err := grpc.Dial(":7777", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %s", err)
+	}
+	defer conn.Close()
+
+	telegramBot()
+}
+
+func telegramBot() {
 	bot, err := tgbotapi.NewBotAPI("643861723:AAHOqxU2GCQ1bqMdqycM1QPCGZEK1ekaH8s")
 	if err != nil {
 		log.Panic(err)

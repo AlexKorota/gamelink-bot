@@ -1,7 +1,7 @@
 package service
 
 func ParseRequest(params []string) {
-	for _, v := range params {
-
-	}
+	//for _, v := range params {
+	//
+	//}
 }
