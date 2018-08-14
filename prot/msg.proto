@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package prot;
+
+message Msg {
+    string message = 1;
+}
+
+
+
+service Count {
+
+}
+
+service Find {
+
+}
+
+service Delete {
+
+}
+
+service Update {
+    
+}
+
+service GetUser {
+    rpc Send(Msg) returns(Msg) {}
+}

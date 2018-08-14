@@ -1,23 +1,32 @@
 package main
 
 import (
+	"fmt"
+	"gamelinkBot/prot"
 	"gamelinkBot/service"
 	"github.com/Syfaro/telegram-bot-api"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"log"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func main() {
-	var conn *grpc.ClientConn
-
-	conn, err := grpc.Dial(":7777", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:7777", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
 	}
 	defer conn.Close()
-
+	c := prot.NewSendClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := c.Send(ctx, &prot.Msg{Message: "World"})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	fmt.Println(r)
 	telegramBot()
 }
 
