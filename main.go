@@ -58,6 +58,7 @@ func telegramBot() {
 				bot.Send(msg)
 			case "/send_push":
 			case "/count":
+
 			case "/find":
 			case "/delete": //DELETE
 			case "/update": //JSON
