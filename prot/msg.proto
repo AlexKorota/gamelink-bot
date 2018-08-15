@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package prot;
 
-message OneCriteriaRequest {
+message OneCriteriaStruct {
     enum Criteria {
        id           = 0;
        vk_id        = 1;
@@ -23,11 +23,15 @@ message OneCriteriaRequest {
     string   value = 3;
 }
 
-message MultiCriteriaRequest {
-    repeated MultiCriteriaRequest requests = 1;
+message OneCriteriaRequest {
+    OneCriteriaStruct request = 1;
 }
 
-message OneUserResponse {
+message MultiCriteriaRequest {
+    repeated OneCriteriaRequest requests = 1;
+}
+
+message UserResponseStruct {
     int64  id         = 1;
     string vk_id      = 2;
     string fb_id      = 3;
@@ -38,30 +42,21 @@ message OneUserResponse {
     int32  deleted    = 8;
 }
 
+message OneUserResponse {
+    UserResponseStruct user = 1;
+}
+
 message MultiUserResponse {
-    repeated OneUserResponse responses = 1;
+    repeated UserResponseStruct users = 1;
 }
 
 message CountResponse {
     int64 count = 1;
 }
 
-service Count {
-    rpc GetUser(MultiCriteriaRequest) returns(CountResponse) {}
-}
-
-service Find {
-    rpc GetUser(MultiCriteriaRequest) returns(MultiUserResponse) {}
-}
-
-service Delete {
-    rpc Delete(OneCriteriaRequest) returns(OneUserResponse) {}
-}
-
-service Update {
+service AdminService {
+    rpc Count(MultiCriteriaRequest) returns(CountResponse) {}
+    rpc Find(MultiCriteriaRequest) returns(MultiUserResponse) {}
     rpc Update(MultiCriteriaRequest) returns(MultiUserResponse) {}
-}
-
-service GetUser {
-    rpc GetUser(MultiCriteriaRequest) returns(MultiUserResponse) {}
+    rpc Delete(OneCriteriaRequest) returns(OneUserResponse) {}
 }

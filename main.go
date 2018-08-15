@@ -19,24 +19,19 @@ func main() {
 		log.Fatalf("did not connect: %s", err)
 	}
 	defer conn.Close()
-	c := prot.NewSendClient(conn)
+	c := prot.NewAdminServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.Send(ctx, &prot.Msg{Message: "World"})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	fmt.Println(r)
-	telegramBot()
+	telegramBot(ctx, c)
 }
 
-func telegramBot() {
+func telegramBot(ctx context.Context, c prot.AdminServiceClient) {
 	bot, err := tgbotapi.NewBotAPI("643861723:AAHOqxU2GCQ1bqMdqycM1QPCGZEK1ekaH8s")
 	if err != nil {
 		log.Panic(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -50,7 +45,11 @@ func telegramBot() {
 		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
 			arr := strings.Split(update.Message.Text, " ")
 			if len(arr) > 1 {
-				service.ParseRequest(arr[1:])
+				r, err := service.ParseRequest(arr[1:])
+				fmt.Println(r)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 			switch arr[0] {
 			case "/start":
