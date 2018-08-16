@@ -24,11 +24,11 @@ message OneCriteriaStruct {
 }
 
 message OneCriteriaRequest {
-    OneCriteriaStruct request = 1;
+    OneCriteriaStruct param = 1;
 }
 
 message MultiCriteriaRequest {
-    repeated OneCriteriaRequest requests = 1;
+    repeated OneCriteriaStruct params = 1;
 }
 
 message UserResponseStruct {

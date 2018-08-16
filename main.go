@@ -20,7 +20,7 @@ func main() {
 	}
 	defer conn.Close()
 	c := prot.NewAdminServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	telegramBot(ctx, c)
 }
@@ -44,11 +44,12 @@ func telegramBot(ctx context.Context, c prot.AdminServiceClient) {
 		}
 		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
 			arr := strings.Split(update.Message.Text, " ")
+			var req []*prot.OneCriteriaStruct
 			if len(arr) > 1 {
-				r, err := service.ParseRequest(arr[1:])
-				fmt.Println(r)
+				req, err = service.ParseRequest(arr[1:])
 				if err != nil {
-					log.Fatal(err)
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+					continue
 				}
 			}
 			switch arr[0] {
@@ -57,7 +58,12 @@ func telegramBot(ctx context.Context, c prot.AdminServiceClient) {
 				bot.Send(msg)
 			case "/send_push":
 			case "/count":
-
+				fmt.Println(req)
+				resp, err := c.Count(ctx, &prot.MultiCriteriaRequest{Params: req})
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+				}
+				fmt.Println(resp)
 			case "/find":
 			case "/delete": //DELETE
 			case "/update": //JSON
