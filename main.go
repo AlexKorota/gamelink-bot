@@ -20,12 +20,13 @@ func main() {
 	}
 	defer conn.Close()
 	c := prot.NewAdminServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-	telegramBot(ctx, c)
+	if c == nil { //Но это не точно!
+		log.Fatal("connection error")
+	}
+	telegramBot(c)
 }
 
-func telegramBot(ctx context.Context, c prot.AdminServiceClient) {
+func telegramBot(c prot.AdminServiceClient) {
 	bot, err := tgbotapi.NewBotAPI("643861723:AAHOqxU2GCQ1bqMdqycM1QPCGZEK1ekaH8s")
 	if err != nil {
 		log.Panic(err)
@@ -43,6 +44,8 @@ func telegramBot(ctx context.Context, c prot.AdminServiceClient) {
 			continue
 		}
 		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
 			arr := strings.Split(update.Message.Text, " ")
 			var req []*prot.OneCriteriaStruct
 			if len(arr) > 1 {
