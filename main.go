@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
 	"github.com/Syfaro/telegram-bot-api"
@@ -61,16 +60,35 @@ func telegramBot(c prot.AdminServiceClient) {
 				bot.Send(msg)
 			case "/send_push":
 			case "/count":
-				fmt.Println(req)
 				resp, err := c.Count(ctx, &prot.MultiCriteriaRequest{Params: req})
 				if err != nil {
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 				}
-				fmt.Println(resp)
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
 			case "/find":
-			case "/delete": //DELETE
-			case "/update": //JSON
-			case "/get_user": //GET
+				resp, err := c.Find(ctx, &prot.MultiCriteriaRequest{Params: req})
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+				}
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+			case "/delete":
+				resp, err := c.Delete(ctx, &prot.MultiCriteriaRequest{Params: req})
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+				}
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+			case "/update":
+				resp, err := c.Update(ctx, &prot.MultiCriteriaRequest{Params: req})
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+				}
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+			case "/get_user":
+				resp, err := c.Delete(ctx, &prot.MultiCriteriaRequest{Params: req})
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+				}
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
 			default:
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
 				bot.Send(msg)

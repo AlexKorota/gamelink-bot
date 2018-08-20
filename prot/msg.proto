@@ -60,5 +60,5 @@ service AdminService {
     rpc Count(MultiCriteriaRequest) returns(CountResponse) {}
     rpc Find(MultiCriteriaRequest) returns(MultiUserResponse) {}
     rpc Update(MultiCriteriaRequest) returns(MultiUserResponse) {}
-    rpc Delete(OneCriteriaRequest) returns(OneUserResponse) {}
+    rpc Delete(MultiCriteriaRequest) returns(OneUserResponse) {}
 }
