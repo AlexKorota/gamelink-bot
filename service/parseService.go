@@ -31,34 +31,34 @@ func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
 		return nil, errors.New("delete regexp error")
 	}
 	for _, v := range params {
-		var result []string
-		result = ageRegexp.FindStringSubmatch(v)
-		if result != nil {
-			appendToMultiCriteria(&multiCriteria, result)
+		var matches []string
+		matches = ageRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		result = idRegexp.FindStringSubmatch(v)
-		if result != nil {
-			appendToMultiCriteria(&multiCriteria, result)
+		matches = idRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		result = sexRegexp.FindStringSubmatch(v)
-		if result != nil {
-			appendToMultiCriteria(&multiCriteria, result)
+		matches = sexRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		result = delRegexp.FindStringSubmatch(v)
-		if result != nil {
-			appendToMultiCriteria(&multiCriteria, result)
+		matches = delRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		result = registrationRegexp.FindStringSubmatch(v)
-		if result != nil {
-			if result[8] != "" && result[11] != "" {
-				result[6] = result[8]
-				result[7] = result[11]
+		matches = registrationRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			if matches[8] != "" && matches[11] != "" {
+				matches[6] = matches[8]
+				matches[7] = matches[11]
 			}
-			appendToMultiCriteria(&multiCriteria, result)
+			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
 		return nil, errors.New(fmt.Sprintf("wrong param %s", v))
@@ -66,28 +66,28 @@ func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
 	return multiCriteria, nil
 }
 
-func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, result []string) {
+func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []string) {
 	var criteria, secondCriteria prot.OneCriteriaStruct
-	if result[3] != "" {
-		if val, ok := prot.OneCriteriaStruct_Criteria_value[result[3]]; ok {
+	if matches[3] != "" {
+		if val, ok := prot.OneCriteriaStruct_Criteria_value[matches[3]]; ok {
 			criteria.Cr = prot.OneCriteriaStruct_Criteria(val)
 			secondCriteria.Cr = prot.OneCriteriaStruct_Criteria(val)
 		} else {
 			// Стоит ли тут добавить обработку ошибки на случай, если критерий не нашелся в енуме?
 		}
 	}
-	if result[5] != "" {
+	if matches[5] != "" {
 		criteria.Op = prot.OneCriteriaStruct_Option(2)
-		criteria.Value = result[5]
+		criteria.Value = matches[5]
 		*multiCriteria = append(*multiCriteria, &criteria)
-	} else if result[6] != "" && result[7] != "" {
+	} else if matches[6] != "" && matches[7] != "" {
 		criteria.Op = prot.OneCriteriaStruct_Option(1)
-		criteria.Value = result[7]
+		criteria.Value = matches[7]
 
 		*multiCriteria = append(*multiCriteria, &criteria)
 
 		secondCriteria.Op = prot.OneCriteriaStruct_Option(3)
-		secondCriteria.Value = result[6]
+		secondCriteria.Value = matches[6]
 
 		*multiCriteria = append(*multiCriteria, &secondCriteria)
 	}

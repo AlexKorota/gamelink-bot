@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
 	"github.com/Syfaro/telegram-bot-api"
@@ -16,6 +15,13 @@ import (
 type requestStruct struct {
 	params  []*prot.OneCriteriaStruct
 	command string
+}
+
+type contextStruct struct {
+	request requestStruct
+	chatID  int64
+	bot     *tgbotapi.BotAPI
+	client  prot.AdminServiceClient
 }
 
 func main() {
@@ -43,8 +49,7 @@ func telegramBot(c prot.AdminServiceClient) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates, err := bot.GetUpdatesChan(u)
-
-	var ch chan requestStruct = make(chan requestStruct)
+	ctxC, _ := context.WithCancel(context.Background())
 	for update := range updates {
 		if update.Message == nil {
 			continue
@@ -59,11 +64,11 @@ func telegramBot(c prot.AdminServiceClient) {
 				"/update":    5,
 				"/get_user":  6,
 			}
-			ctx := context.Background()
 			arr := strings.Split(update.Message.Text, " ")
 			if _, ok := commands[arr[0]]; !ok {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
 				bot.Send(msg)
+				continue
 			}
 			var req []*prot.OneCriteriaStruct
 			if len(arr) > 1 {
@@ -74,10 +79,10 @@ func telegramBot(c prot.AdminServiceClient) {
 				}
 			}
 			rq := requestStruct{params: req, command: arr[0]}
-			fmt.Println(rq)
-			ch <- rq
-
-			go sender(ctx, ch, bot, c, update)
+			ctxStruct := contextStruct{request: rq, chatID: update.Message.Chat.ID, bot: bot, client: c}
+			ctxV := context.WithValue(ctxC, "contextStruct", ctxStruct)
+			ctxT, _ := context.WithTimeout(ctxV, time.Second*5)
+			go sender(ctxT)
 		} else {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Use the words for search.")
 			bot.Send(msg)
@@ -85,51 +90,45 @@ func telegramBot(c prot.AdminServiceClient) {
 	}
 }
 
-func sender(ctx context.Context, ch chan requestStruct, bot *tgbotapi.BotAPI, c prot.AdminServiceClient, update tgbotapi.Update) {
-	req := <-ch
-	fmt.Println("sdfsggfg")
-	fmt.Println(req)
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
-	bot.Send(msg)
-	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
-	defer cancel()
-	switch req.command {
+func sender(ctx context.Context) {
+	ctxData := ctx.Value("contextStruct").(contextStruct)
+	switch ctxData.request.command {
 	case "/start":
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "I'm ready to serve you Master. Send me /your_command and i'll do it for you. But remember: Be careful what you wish for!")
-		bot.Send(msg)
+		msg := tgbotapi.NewMessage(ctxData.chatID, "I'm ready to serve you Master. Send me /your_command and i'll do it for you. But remember: Be careful what you wish for!")
+		ctxData.bot.Send(msg)
 	case "/send_push":
 	case "/count":
-		resp, err := c.Count(ctx, &prot.MultiCriteriaRequest{Params: req.params})
+		resp, err := ctxData.client.Count(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
 	case "/find":
-		resp, err := c.Find(ctx, &prot.MultiCriteriaRequest{Params: req.params})
+		resp, err := ctxData.client.Find(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
 	case "/delete":
-		resp, err := c.Delete(ctx, &prot.MultiCriteriaRequest{Params: req.params})
+		resp, err := ctxData.client.Delete(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
 	case "/update":
-		resp, err := c.Update(ctx, &prot.MultiCriteriaRequest{Params: req.params})
+		resp, err := ctxData.client.Update(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
 	case "/get_user":
-		resp, err := c.Delete(ctx, &prot.MultiCriteriaRequest{Params: req.params})
+		resp, err := ctxData.client.Delete(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, resp.String()))
+		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
 	default:
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
-		bot.Send(msg)
+		msg := tgbotapi.NewMessage(ctxData.chatID, "Invalid command. Try again")
+		ctxData.bot.Send(msg)
 	}
 }
