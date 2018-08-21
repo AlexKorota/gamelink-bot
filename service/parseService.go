@@ -63,13 +63,11 @@ func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
 		}
 		return nil, errors.New(fmt.Sprintf("wrong param %s", v))
 	}
-	fmt.Println(multiCriteria)
 	return multiCriteria, nil
 }
 
 func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, result []string) {
 	var criteria, secondCriteria prot.OneCriteriaStruct
-	fmt.Println(result)
 	if result[3] != "" {
 		if val, ok := prot.OneCriteriaStruct_Criteria_value[result[3]]; ok {
 			criteria.Cr = prot.OneCriteriaStruct_Criteria(val)
