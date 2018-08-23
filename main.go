@@ -64,7 +64,7 @@ func telegramBot(c prot.AdminServiceClient) {
 				"/update":    5,
 				"/get_user":  6,
 			}
-			arr := strings.Split(update.Message.Text, " ")
+			arr := strings.Split(strings.Trim(update.Message.Text, " "), " ")
 			if _, ok := commands[arr[0]]; !ok {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
 				bot.Send(msg)

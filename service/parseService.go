@@ -38,6 +38,9 @@ func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
 	var multiCriteria []*prot.OneCriteriaStruct
 	for _, v := range params {
 		var matches []string
+		if v == "" {
+			continue
+		}
 		matches = ageRegexp.FindStringSubmatch(v)
 		if matches != nil {
 			appendToMultiCriteria(&multiCriteria, matches)
