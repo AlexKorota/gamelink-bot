@@ -1,12 +1,13 @@
 package main
 
 import (
+	"gamelinkBot/config"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
 	"github.com/Syfaro/telegram-bot-api"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -24,8 +25,17 @@ type contextStruct struct {
 	client  prot.AdminServiceClient
 }
 
+func init() {
+	config.LoadEnvironment()
+	if config.IsDevelopmentEnv() {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
+}
+
 func main() {
-	conn, err := grpc.Dial("localhost:7777", grpc.WithInsecure())
+	conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
 	}
@@ -38,7 +48,7 @@ func main() {
 }
 
 func telegramBot(c prot.AdminServiceClient) {
-	bot, err := tgbotapi.NewBotAPI("643861723:AAHOqxU2GCQ1bqMdqycM1QPCGZEK1ekaH8s")
+	bot, err := tgbotapi.NewBotAPI(config.TBotToken)
 	if err != nil {
 		log.Panic(err)
 	}
