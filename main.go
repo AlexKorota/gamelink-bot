@@ -66,13 +66,15 @@ func telegramBot(c prot.AdminServiceClient) {
 		}
 		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
 			commands := map[string]int{
-				"/start":     0,
-				"/send_push": 1,
-				"/count":     2,
-				"/find":      3,
-				"/delete":    4,
-				"/update":    5,
-				"/get_user":  6,
+				"/start":        0,
+				"/send_push":    1,
+				"/count":        2,
+				"/find":         3,
+				"/delete":       4,
+				"/update":       5,
+				"/get_user":     6,
+				"/add_admin":    7,
+				"/delete_admin": 8,
 			}
 			arr := strings.Split(strings.Trim(update.Message.Text, " "), " ")
 			if _, ok := commands[arr[0]]; !ok {
@@ -80,6 +82,16 @@ func telegramBot(c prot.AdminServiceClient) {
 				bot.Send(msg)
 				continue
 			}
+
+			//check if user is super admin
+			isSuperAdmin := superAdminCheck(update.Message.From.UserName)
+			if !isSuperAdmin && (arr[0] == "/add_admin" || arr[0] == "/delete_admin") {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Permission denied")
+				bot.Send(msg)
+				continue
+			}
+			//if other - SuperUser middleware or Check from DB
+
 			var req []*prot.OneCriteriaStruct
 			if len(arr) > 1 {
 				req, err = service.ParseRequest(arr[1:])
@@ -98,6 +110,16 @@ func telegramBot(c prot.AdminServiceClient) {
 			bot.Send(msg)
 		}
 	}
+}
+
+func superAdminCheck(username string) bool {
+	arr := strings.Split(strings.Trim(config.SuperAdmin, " "), ",")
+	for _, v := range arr {
+		if username == v {
+			return true
+		}
+	}
+	return false
 }
 
 func sender(ctx context.Context) {

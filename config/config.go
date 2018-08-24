@@ -13,6 +13,8 @@ var (
 	DialAddress string
 	//TBotToken - telegram bot token
 	TBotToken string
+	//SuperAdmin - telegram username of superadmin
+	SuperAdmin string
 )
 
 const (
@@ -20,6 +22,7 @@ const (
 	devMode       = "development"
 	dialAddrKey   = "DIALADDR"
 	telegramToken = "TTOKEN"
+	superAdmin    = "SADMIN"
 )
 
 //GetEnvironment - this function returns mode string of the os environment or "development" mode if empty or not defined
@@ -50,5 +53,9 @@ func LoadEnvironment() {
 	TBotToken = os.Getenv(telegramToken)
 	if DialAddress == "" {
 		log.Fatal("telegram token must be set")
+	}
+	SuperAdmin = os.Getenv(superAdmin)
+	if SuperAdmin == "" {
+		log.Fatal("should be at least one super admin")
 	}
 }
