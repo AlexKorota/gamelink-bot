@@ -12,11 +12,11 @@ var ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp *regexp.Regexp
 var err error
 
 func init() {
-	ageRegexp, err = regexp.Compile("(((age)\\s*(=\\s*([0-9]{1,2}$)|\\[\\s*([0-9]{1,2})\\s*;\\s*([0-9]{1,2})\\s*\\]$)))")
+	ageRegexp, err = regexp.Compile("(((age)\\s*(=\\s*([0-9]{1,2}$)|\\[\\s*((([0-9]{1,2})))\\s*;\\s*((([0-9]{1,2})))\\s*\\]$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
-	idRegexp, err = regexp.Compile("(((id|vk_id|fb_id)\\s*(=\\s*([0-9]{1,20}$)|\\[\\s*([0-9]{1,20})\\s*;\\s*([0-9]{1,20})\\s*\\]$)))")
+	idRegexp, err = regexp.Compile("(((id|vk_id|fb_id)\\s*(=\\s*([0-9]{1,20}$)|\\[\\s*((([0-9]{1,20})))\\s*;\\s*((([0-9]{1,20})))\\s*\\]$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,10 +63,6 @@ func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
 		}
 		matches = registrationRegexp.FindStringSubmatch(v)
 		if matches != nil {
-			if matches[8] != "" && matches[11] != "" {
-				matches[6] = matches[8]
-				matches[7] = matches[11]
-			}
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
@@ -89,14 +85,14 @@ func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []s
 		criteria.Op = prot.OneCriteriaStruct_Option(2)
 		criteria.Value = matches[5]
 		*multiCriteria = append(*multiCriteria, &criteria)
-	} else if matches[6] != "" && matches[7] != "" {
+	} else if matches[8] != "" && matches[11] != "" {
 		criteria.Op = prot.OneCriteriaStruct_Option(1)
-		criteria.Value = matches[7]
+		criteria.Value = matches[11]
 
 		*multiCriteria = append(*multiCriteria, &criteria)
 
 		secondCriteria.Op = prot.OneCriteriaStruct_Option(3)
-		secondCriteria.Value = matches[6]
+		secondCriteria.Value = matches[8]
 
 		*multiCriteria = append(*multiCriteria, &secondCriteria)
 	}
