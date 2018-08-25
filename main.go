@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gamelinkBot/common"
 	"gamelinkBot/config"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
@@ -12,18 +13,6 @@ import (
 	"strings"
 	"time"
 )
-
-type requestStruct struct {
-	params  []*prot.OneCriteriaStruct
-	command string
-}
-
-type contextStruct struct {
-	request requestStruct
-	chatID  int64
-	bot     *tgbotapi.BotAPI
-	client  prot.AdminServiceClient
-}
 
 func init() {
 	config.LoadEnvironment()
@@ -84,7 +73,7 @@ func telegramBot(c prot.AdminServiceClient) {
 			}
 
 			//check if user is super admin
-			isSuperAdmin := superAdminCheck(update.Message.From.UserName)
+			isSuperAdmin := service.SuperAdminCheck(update.Message.From.UserName)
 			if !isSuperAdmin && (arr[0] == "/add_admin" || arr[0] == "/delete_admin") {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Permission denied")
 				bot.Send(msg)
@@ -100,67 +89,14 @@ func telegramBot(c prot.AdminServiceClient) {
 					continue
 				}
 			}
-			rq := requestStruct{params: req, command: arr[0]}
-			ctxStruct := contextStruct{request: rq, chatID: update.Message.Chat.ID, bot: bot, client: c}
-			ctxV := context.WithValue(ctxC, "contextStruct", ctxStruct)
+			rq := common.RequestStruct{Params: req, Command: arr[0]}
+			ctxStruct := common.ContextStruct{Request: rq, ChatID: update.Message.Chat.ID, Bot: bot, Client: c}
+			ctxV := context.WithValue(ctxC, "ContextStruct", ctxStruct)
 			ctxT, _ := context.WithTimeout(ctxV, time.Second*5)
-			go sender(ctxT)
+			go service.Sender(ctxT)
 		} else {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Use the words for search.")
 			bot.Send(msg)
 		}
-	}
-}
-
-func superAdminCheck(username string) bool {
-	arr := strings.Split(strings.Trim(config.SuperAdmin, " "), ",")
-	for _, v := range arr {
-		if username == v {
-			return true
-		}
-	}
-	return false
-}
-
-func sender(ctx context.Context) {
-	ctxData := ctx.Value("contextStruct").(contextStruct)
-	switch ctxData.request.command {
-	case "/start":
-		msg := tgbotapi.NewMessage(ctxData.chatID, "I'm ready to serve you Master. Send me /your_command and i'll do it for you. But remember: Be careful what you wish for!")
-		ctxData.bot.Send(msg)
-	case "/send_push":
-	case "/count":
-		resp, err := ctxData.client.Count(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
-		if err != nil {
-			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
-		}
-		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
-	case "/find":
-		resp, err := ctxData.client.Find(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
-		if err != nil {
-			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
-		}
-		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
-	case "/delete":
-		resp, err := ctxData.client.Delete(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
-		if err != nil {
-			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
-		}
-		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
-	case "/update":
-		resp, err := ctxData.client.Update(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
-		if err != nil {
-			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
-		}
-		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
-	case "/get_user":
-		resp, err := ctxData.client.Delete(ctx, &prot.MultiCriteriaRequest{Params: ctxData.request.params})
-		if err != nil {
-			ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, err.Error()))
-		}
-		ctxData.bot.Send(tgbotapi.NewMessage(ctxData.chatID, resp.String()))
-	default:
-		msg := tgbotapi.NewMessage(ctxData.chatID, "Invalid command. Try again")
-		ctxData.bot.Send(msg)
 	}
 }
