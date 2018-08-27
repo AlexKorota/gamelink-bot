@@ -13,6 +13,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -41,18 +42,22 @@ func main() {
 	if c == nil { //Но это не точно!
 		log.Fatal("connection error")
 	}
-	telegramBot(c)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go telegramBot(c, &wg)
+	wg.Wait()
+	log.Warn("Exiting...")
 }
 
-func telegramBot(c prot.AdminServiceClient) {
+func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup) {
+	defer wg.Done()
 	bot, err := tgbotapi.NewBotAPI(config.TBotToken)
 	if err != nil {
-		log.Panic(err)
+		log.Error(err)
+		return
 	}
-
 	bot.Debug = false
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates, err := bot.GetUpdatesChan(u)
@@ -73,6 +78,7 @@ func telegramBot(c prot.AdminServiceClient) {
 				"/add_admin":    7,
 				"/delete_admin": 8,
 			}
+			log.Println(update.Message.Text)
 			arr := strings.Split(strings.Trim(update.Message.Text, " "), " ")
 			if _, ok := commands[arr[0]]; !ok {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
