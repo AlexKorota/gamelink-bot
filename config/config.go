@@ -15,6 +15,8 @@ var (
 	TBotToken string
 	//SuperAdmin - telegram username of superadmin
 	SuperAdmin string
+	//mongoAddrKey - network addres for mongoDB
+	MongoAddr string
 )
 
 const (
@@ -23,6 +25,7 @@ const (
 	dialAddrKey   = "DIALADDR"
 	telegramToken = "TTOKEN"
 	superAdmin    = "SADMIN"
+	mongoAddr     = "MONGOADDR"
 )
 
 //GetEnvironment - this function returns mode string of the os environment or "development" mode if empty or not defined
@@ -57,5 +60,9 @@ func LoadEnvironment() {
 	SuperAdmin = os.Getenv(superAdmin)
 	if SuperAdmin == "" {
 		log.Fatal("should be at least one super admin")
+	}
+	MongoAddr = os.Getenv(mongoAddr)
+	if MongoAddr == "" {
+		log.Fatal("mongo address must be set")
 	}
 }

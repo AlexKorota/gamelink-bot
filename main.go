@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gamelinkBot/common"
 	"gamelinkBot/config"
 	"gamelinkBot/prot"
@@ -9,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"gopkg.in/mgo.v2"
 	"reflect"
 	"strings"
 	"time"
@@ -24,6 +26,12 @@ func init() {
 }
 
 func main() {
+	db, err := mgo.Dial(config.MongoAddr)
+	if err != nil {
+		log.Fatal("can't connect to db. Error:", err)
+	}
+	defer db.Close()
+	fmt.Println(db)
 	conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
