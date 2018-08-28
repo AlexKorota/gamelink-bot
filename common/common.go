@@ -18,6 +18,6 @@ type ContextStruct struct {
 }
 
 type AdminRequestStruct struct {
-	Username    string
+	Name        string
 	Permissions []string
 }

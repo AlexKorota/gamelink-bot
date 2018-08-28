@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gamelinkBot/common"
 	"gamelinkBot/config"
 	"gamelinkBot/prot"
@@ -33,7 +32,6 @@ func main() {
 		log.Fatal("can't connect to db. Error:", err)
 	}
 	defer db.Close()
-	fmt.Println(db)
 	conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
@@ -88,36 +86,67 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 
 			//check if user is super admin
 			isSuperAdmin := service.SuperAdminCheck(update.Message.From.UserName)
+			collection := db.DB(config.MongoDBName).C("admins")
 			if arr[0] == "/grant_permission" || arr[0] == "/revoke_permission" {
 				if !isSuperAdmin {
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Permission denied")
 					bot.Send(msg)
 					continue
 				}
-				admin, err := service.ParsePermissionRequest(arr[1:])
+				substr := update.Message.Text[strings.Index(update.Message.Text, " ")+1:]
+				admin, err := service.ParsePermissionRequest(substr)
 				if err != nil {
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 					continue
 				}
-				c := db.DB(config.MongoDBName).C("admins")
 				if arr[0] == "/grant_permission" {
-					selector := bson.M{"name": admin.Username}
-					upsertdata := bson.M{"$set": admin.Permissions}
-					_, err = c.Upsert(selector, upsertdata)
+					selector := bson.M{"name": admin.Name}
+					upsertdata := bson.M{"$addToSet": bson.M{"permissions": bson.M{"$each": admin.Permissions}}}
+					_, err = collection.Upsert(selector, upsertdata)
 				} else if arr[0] == "/revoke_permission" {
-					selector := bson.M{"name": admin.Username}
+					selector := bson.M{"name": admin.Name}
 					revokePermissions := bson.M{"permissions": bson.M{"$in": admin.Permissions}}
 					revokedata := bson.M{"$pull": revokePermissions}
-					err = c.Update(selector, revokedata)
+					err = collection.Update(selector, revokedata)
 				}
 				if err != nil {
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 					continue
 				}
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "update complete"))
+				user := common.AdminRequestStruct{}
+				err = collection.Find(bson.M{"name": admin.Name}).One(&user)
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+					continue
+				}
+				msg := "user " + user.Name + " updated and now has next permissions: " + strings.Join(user.Permissions, ", ")
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
 				continue
-			} else {
-				//else SuperUser middleware or Check from DB. If check fail - send error, continue
+			} else if !isSuperAdmin {
+				user := update.Message.From.UserName
+				admin := common.AdminRequestStruct{}
+				err := collection.Find(bson.M{"name": user}).One(&admin)
+				if err != nil {
+					if err.Error() == "not found" {
+						msg := "user " + user + " is not admin approved to access this app"
+						bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
+						continue
+					}
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+					continue
+				}
+				var success bool
+				for _, v := range admin.Permissions {
+					if v == strings.Trim(arr[0], "/") {
+						success = true
+						break
+					}
+				}
+				if !success {
+					msg := "user " + user + " has no permission to use " + arr[0] + " command"
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
+					continue
+				}
 			}
 
 			var req []*prot.OneCriteriaStruct

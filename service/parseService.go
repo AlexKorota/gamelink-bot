@@ -7,6 +7,7 @@ import (
 	"gamelinkBot/prot"
 	"log"
 	"regexp"
+	"strings"
 )
 
 var ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp *regexp.Regexp
@@ -33,7 +34,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	permissionRegexp, err = regexp.Compile("")
+	permissionRegexp, err = regexp.Compile("(\\w+)\\s*\\[((\\s*(count|find|delete|send_push|update|get_user)\\s*;)*\\s*(count|find|delete|send_push|update|get_user))\\s*]")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
@@ -84,27 +88,33 @@ func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []s
 		}
 	}
 	if matches[5] != "" {
-		criteria.Op = prot.OneCriteriaStruct_Option(2)
+		criteria.Op = prot.OneCriteriaStruct_e
 		criteria.Value = matches[5]
 		*multiCriteria = append(*multiCriteria, &criteria)
 	} else if matches[8] != "" && matches[11] != "" {
-		criteria.Op = prot.OneCriteriaStruct_Option(1)
+		criteria.Op = prot.OneCriteriaStruct_l
 		criteria.Value = matches[11]
 
 		*multiCriteria = append(*multiCriteria, &criteria)
 
-		secondCriteria.Op = prot.OneCriteriaStruct_Option(3)
+		secondCriteria.Op = prot.OneCriteriaStruct_g
 		secondCriteria.Value = matches[8]
 
 		*multiCriteria = append(*multiCriteria, &secondCriteria)
 	}
 }
 
-func ParsePermissionRequest(params []string) (common.AdminRequestStruct, error) {
+func ParsePermissionRequest(params string) (common.AdminRequestStruct, error) {
 	var AdminRequest common.AdminRequestStruct
-	AdminRequest.Username = "mikola"
-	AdminRequest.Permissions = append(AdminRequest.Permissions, "opopopopopopo")
-	//parse regexp
-
+	var matches []string
+	matches = permissionRegexp.FindStringSubmatch(params)
+	if matches == nil {
+		return AdminRequest, errors.New("bad admin request")
+	}
+	AdminRequest.Name = matches[1]
+	permissions := strings.Split(matches[2], ";")
+	for _, v := range permissions {
+		AdminRequest.Permissions = append(AdminRequest.Permissions, strings.Trim(v, " "))
+	}
 	return AdminRequest, nil
 }
