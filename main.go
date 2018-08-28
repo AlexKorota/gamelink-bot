@@ -11,6 +11,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"reflect"
 	"strings"
 	"sync"
@@ -44,12 +45,12 @@ func main() {
 	}
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	go telegramBot(c, &wg)
+	go telegramBot(c, &wg, db)
 	wg.Wait()
 	log.Warn("Exiting...")
 }
 
-func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup) {
+func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session) {
 	defer wg.Done()
 	bot, err := tgbotapi.NewBotAPI(config.TBotToken)
 	if err != nil {
@@ -78,7 +79,6 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup) {
 				"/grant_permission":  7,
 				"/revoke_permission": 8,
 			}
-			log.Println(update.Message.Text)
 			arr := strings.Split(strings.Trim(update.Message.Text, " "), " ")
 			if _, ok := commands[arr[0]]; !ok {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
@@ -88,12 +88,37 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup) {
 
 			//check if user is super admin
 			isSuperAdmin := service.SuperAdminCheck(update.Message.From.UserName)
-			if !isSuperAdmin && (arr[0] == "/grant_permission" || arr[0] == "/revoke_permission") {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Permission denied")
-				bot.Send(msg)
+			if arr[0] == "/grant_permission" || arr[0] == "/revoke_permission" {
+				if !isSuperAdmin {
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Permission denied")
+					bot.Send(msg)
+					continue
+				}
+				admin, err := service.ParsePermissionRequest(arr[1:])
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+					continue
+				}
+				c := db.DB(config.MongoDBName).C("admins")
+				if arr[0] == "/grant_permission" {
+					selector := bson.M{"name": admin.Username}
+					upsertdata := bson.M{"$set": admin.Permissions}
+					_, err = c.Upsert(selector, upsertdata)
+				} else if arr[0] == "/revoke_permission" {
+					selector := bson.M{"name": admin.Username}
+					revokePermissions := bson.M{"permissions": bson.M{"$in": admin.Permissions}}
+					revokedata := bson.M{"$pull": revokePermissions}
+					err = c.Update(selector, revokedata)
+				}
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+					continue
+				}
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "update complete"))
 				continue
+			} else {
+				//else SuperUser middleware or Check from DB. If check fail - send error, continue
 			}
-			//if other - SuperUser middleware or Check from DB
 
 			var req []*prot.OneCriteriaStruct
 			if len(arr) > 1 {

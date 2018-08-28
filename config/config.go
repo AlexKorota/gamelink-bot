@@ -17,6 +17,8 @@ var (
 	SuperAdmin []string
 	//mongoAddrKey - network addres for mongoDB
 	MongoAddr string
+	//mongoDBName
+	MongoDBName string
 )
 
 const (
@@ -26,6 +28,7 @@ const (
 	telegramToken = "TTOKEN"
 	superAdmin    = "SADMIN"
 	mongoAddr     = "MONGOADDR"
+	mongoDBName   = "MONGODBNAME"
 )
 
 //GetEnvironment - this function returns mode string of the os environment or "development" mode if empty or not defined
@@ -66,5 +69,9 @@ func LoadEnvironment() {
 	MongoAddr = os.Getenv(mongoAddr)
 	if MongoAddr == "" {
 		log.Fatal("mongo address must be set")
+	}
+	MongoDBName = os.Getenv(mongoDBName)
+	if MongoAddr == "" {
+		log.Fatal("mongo DB name must be set")
 	}
 }

@@ -16,3 +16,8 @@ type ContextStruct struct {
 	Bot     *tgbotapi.BotAPI
 	Client  prot.AdminServiceClient
 }
+
+type AdminRequestStruct struct {
+	Username    string
+	Permissions []string
+}

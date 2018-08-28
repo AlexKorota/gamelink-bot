@@ -3,12 +3,13 @@ package service
 import (
 	"errors"
 	"fmt"
+	"gamelinkBot/common"
 	"gamelinkBot/prot"
 	"log"
 	"regexp"
 )
 
-var ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp *regexp.Regexp
+var ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp *regexp.Regexp
 var err error
 
 func init() {
@@ -32,6 +33,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	permissionRegexp, err = regexp.Compile("")
 }
 
 func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
@@ -96,4 +98,13 @@ func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []s
 
 		*multiCriteria = append(*multiCriteria, &secondCriteria)
 	}
+}
+
+func ParsePermissionRequest(params []string) (common.AdminRequestStruct, error) {
+	var AdminRequest common.AdminRequestStruct
+	AdminRequest.Username = "mikola"
+	AdminRequest.Permissions = append(AdminRequest.Permissions, "opopopopopopo")
+	//parse regexp
+
+	return AdminRequest, nil
 }
