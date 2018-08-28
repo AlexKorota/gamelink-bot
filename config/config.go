@@ -14,7 +14,7 @@ var (
 	//TBotToken - telegram bot token
 	TBotToken string
 	//SuperAdmin - telegram username of superadmin
-	SuperAdmin string
+	SuperAdmin []string
 	//mongoAddrKey - network addres for mongoDB
 	MongoAddr string
 )
@@ -57,10 +57,12 @@ func LoadEnvironment() {
 	if DialAddress == "" {
 		log.Fatal("telegram token must be set")
 	}
-	SuperAdmin = os.Getenv(superAdmin)
-	if SuperAdmin == "" {
+	SA := os.Getenv(superAdmin)
+	if SA == "" {
 		log.Fatal("should be at least one super admin")
 	}
+	SuperAdmin = strings.Split(SA, ",")
+
 	MongoAddr = os.Getenv(mongoAddr)
 	if MongoAddr == "" {
 		log.Fatal("mongo address must be set")

@@ -6,8 +6,7 @@ import (
 )
 
 func SuperAdminCheck(username string) bool {
-	arr := strings.Split(config.SuperAdmin, ",")
-	for _, v := range arr {
+	for _, v := range config.SuperAdmin {
 		if username == strings.Trim(v, " ") {
 			return true
 		}

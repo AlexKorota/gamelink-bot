@@ -68,15 +68,15 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup) {
 		}
 		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
 			commands := map[string]int{
-				"/start":        0,
-				"/send_push":    1,
-				"/count":        2,
-				"/find":         3,
-				"/delete":       4,
-				"/update":       5,
-				"/get_user":     6,
-				"/add_admin":    7,
-				"/delete_admin": 8,
+				"/start":             0,
+				"/send_push":         1,
+				"/count":             2,
+				"/find":              3,
+				"/delete":            4,
+				"/update":            5,
+				"/get_user":          6,
+				"/grant_permission":  7,
+				"/revoke_permission": 8,
 			}
 			log.Println(update.Message.Text)
 			arr := strings.Split(strings.Trim(update.Message.Text, " "), " ")
@@ -88,7 +88,7 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup) {
 
 			//check if user is super admin
 			isSuperAdmin := service.SuperAdminCheck(update.Message.From.UserName)
-			if !isSuperAdmin && (arr[0] == "/add_admin" || arr[0] == "/delete_admin") {
+			if !isSuperAdmin && (arr[0] == "/grant_permission" || arr[0] == "/revoke_permission") {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Permission denied")
 				bot.Send(msg)
 				continue
