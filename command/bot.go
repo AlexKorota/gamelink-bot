@@ -40,8 +40,12 @@ type (
 	}
 )
 
-func NewBot() Reactor {
-	return &Bot{}
+func NewBot(token string) (Reactor, error) {
+	bot, err := tgbotapi.NewBotAPI(token)
+	if err != nil {
+		return nil, err
+	}
+	return &Bot{bot}, nil
 }
 
 func (b Bot) RequesterResponder() chan<- RequesterResponder {
