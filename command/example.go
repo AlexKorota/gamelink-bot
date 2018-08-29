@@ -1,9 +1,15 @@
 package command
 
-import "github.com/sirupsen/logrus"
+import (
+	"gamelinkBot/config"
+	"github.com/sirupsen/logrus"
+)
 
-func BotExample() {
-	reactor := NewBot()
+func Example() {
+	reactor, err := NewBot(config.TBotToken)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	rts := reactor.RequesterResponder()
 	for rt := range rts {
 		logrus.Info(rt.Request())
