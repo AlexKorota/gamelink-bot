@@ -55,7 +55,7 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan Requeste
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
-	go func(chanel chan<- RequesterResponder) {
+	go func(chanel chan<- RequesterResponder, ctx context.Context) {
 		if ctx.Err() != nil {
 			close(rrchan)
 			return
@@ -79,7 +79,7 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan Requeste
 				return
 			}
 		}
-	}(rrchan)
+	}(rrchan, ctx)
 	return rrchan, nil
 }
 
