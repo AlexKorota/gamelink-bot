@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gamelinkBot/command"
 	"gamelinkBot/common"
 	"gamelinkBot/config"
 	"gamelinkBot/prot"
@@ -8,7 +9,6 @@ import (
 	"github.com/Syfaro/telegram-bot-api"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"reflect"
@@ -27,25 +27,26 @@ func init() {
 }
 
 func main() {
-	db, err := mgo.Dial(config.MongoAddr)
-	if err != nil {
-		log.Fatal("can't connect to db. Error:", err)
-	}
-	defer db.Close()
-	conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("did not connect: %s", err)
-	}
-	defer conn.Close()
-	c := prot.NewAdminServiceClient(conn)
-	if c == nil { //Но это не точно!
-		log.Fatal("connection error")
-	}
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go telegramBot(c, &wg, db)
-	wg.Wait()
-	log.Warn("Exiting...")
+	command.Example()
+	//db, err := mgo.Dial(config.MongoAddr)
+	//if err != nil {
+	//	log.Fatal("can't connect to db. Error:", err)
+	//}
+	//defer db.Close()
+	//conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
+	//if err != nil {
+	//	log.Fatalf("did not connect: %s", err)
+	//}
+	//defer conn.Close()
+	//c := prot.NewAdminServiceClient(conn)
+	//if c == nil { //Но это не точно!
+	//	log.Fatal("connection error")
+	//}
+	//wg := sync.WaitGroup{}
+	//wg.Add(1)
+	//go telegramBot(c, &wg, db)
+	//wg.Wait()
+	//log.Warn("Exiting...")
 }
 
 func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session) {

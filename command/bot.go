@@ -25,7 +25,7 @@ type (
 	}
 
 	Reactor interface {
-		RequesterResponder() chan<- RequesterResponder
+		RequesterResponder() <-chan RequesterResponder
 		Respond(r Response)
 	}
 
@@ -48,9 +48,9 @@ func NewBot(token string) (Reactor, error) {
 	return &Bot{bot}, nil
 }
 
-func (b Bot) RequesterResponder() chan<- RequesterResponder {
-	rrchan := make(chan<- RequesterResponder)
-	go func(chanel *chan<- RequesterResponder) {
+func (b Bot) RequesterResponder() <-chan RequesterResponder {
+	rrchan := make(chan RequesterResponder)
+	go func(chanel chan<- RequesterResponder) {
 		config := tgbotapi.NewUpdate(0)
 		config.Timeout = 60
 		updates, err := b.bot.GetUpdatesChan(config)
@@ -58,10 +58,10 @@ func (b Bot) RequesterResponder() chan<- RequesterResponder {
 			return
 		}
 		for update := range updates {
-			*chanel <- &RoundTrip{b, update.Message.Chat.ID,
+			chanel <- &RoundTrip{b, update.Message.Chat.ID,
 				update.Message.From.UserName, update.Message.Text, ""}
 		}
-	}(&rrchan)
+	}(rrchan)
 	return rrchan
 }
 
