@@ -123,27 +123,18 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
 				continue
 			} else if !isSuperAdmin {
-				user := update.Message.From.UserName
-				admin := common.AdminRequestStruct{}
-				err := collection.Find(bson.M{"name": user}).One(&admin)
+				success, err := service.UserPermissionsCheck(update.Message.From.UserName, collection, arr[0])
 				if err != nil {
 					if err.Error() == "not found" {
-						msg := "user " + user + " is not admin approved to access this app"
+						msg := "user " + update.Message.From.UserName + " is not admin approved to access this app"
 						bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
 						continue
 					}
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 					continue
 				}
-				var success bool
-				for _, v := range admin.Permissions {
-					if v == strings.Trim(arr[0], "/") {
-						success = true
-						break
-					}
-				}
 				if !success {
-					msg := "user " + user + " has no permission to use " + arr[0] + " command"
+					msg := "user " + update.Message.From.UserName + " has no permission to use " + arr[0] + " command"
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
 					continue
 				}
