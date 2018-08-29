@@ -1,6 +1,8 @@
 package command
 
-import "github.com/Syfaro/telegram-bot-api"
+import (
+	"github.com/Syfaro/telegram-bot-api"
+)
 
 type (
 	Requester interface {
@@ -43,11 +45,24 @@ func NewBot() Reactor {
 }
 
 func (b Bot) RequesterResponder() chan<- RequesterResponder {
-	return nil
+	rrchan := make(chan<- RequesterResponder)
+	go func(chanel *chan<- RequesterResponder) {
+		config := tgbotapi.NewUpdate(0)
+		config.Timeout = 60
+		updates, err := b.bot.GetUpdatesChan(config)
+		if err != nil {
+			return
+		}
+		for update := range updates {
+			*chanel <- &RoundTrip{b, update.Message.Chat.ID,
+				update.Message.From.UserName, update.Message.Text, ""}
+		}
+	}(&rrchan)
+	return rrchan
 }
 
 func (b Bot) Respond(r Response) {
-
+	b.bot.Send(tgbotapi.NewMessage(r.ChatId(), r.Response()))
 }
 
 func (rt RoundTrip) Request() string {
@@ -67,6 +82,7 @@ func (rt RoundTrip) Response() string {
 }
 
 func (rt RoundTrip) Respond(message string) (e error) {
+	rt.response = message
 	rt.r.Respond(rt)
 	return
 }
