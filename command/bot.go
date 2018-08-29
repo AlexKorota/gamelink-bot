@@ -1,7 +1,9 @@
 package command
 
 import (
+	"context"
 	"github.com/Syfaro/telegram-bot-api"
+	"reflect"
 )
 
 type (
@@ -25,7 +27,7 @@ type (
 	}
 
 	Reactor interface {
-		RequesterResponder() <-chan RequesterResponder
+		RequesterResponderWithContext(ctx context.Context) (<-chan RequesterResponder, error)
 		Respond(r Response)
 	}
 
@@ -48,21 +50,37 @@ func NewBot(token string) (Reactor, error) {
 	return &Bot{bot}, nil
 }
 
-func (b Bot) RequesterResponder() <-chan RequesterResponder {
+func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan RequesterResponder, error) {
 	rrchan := make(chan RequesterResponder)
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	go func(chanel chan<- RequesterResponder) {
+		if ctx.Err() != nil {
+			close(rrchan)
+			return
+		}
 		config := tgbotapi.NewUpdate(0)
 		config.Timeout = 60
 		updates, err := b.bot.GetUpdatesChan(config)
 		if err != nil {
+			close(rrchan)
 			return
 		}
-		for update := range updates {
-			chanel <- &RoundTrip{b, update.Message.Chat.ID,
-				update.Message.From.UserName, update.Message.Text, ""}
+		for {
+			select {
+			case update := <-updates:
+				if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
+					chanel <- &RoundTrip{b, update.Message.Chat.ID,
+						update.Message.From.UserName, update.Message.Text, ""}
+				}
+			case <-ctx.Done():
+				close(rrchan)
+				return
+			}
 		}
 	}(rrchan)
-	return rrchan
+	return rrchan, nil
 }
 
 func (b Bot) Respond(r Response) {
