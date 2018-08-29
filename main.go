@@ -67,18 +67,20 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 		}
 		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
 			commands := map[string]int{
-				"/start":             0,
-				"/send_push":         1,
-				"/count":             2,
-				"/find":              3,
-				"/delete":            4,
-				"/update":            5,
-				"/get_user":          6,
-				"/grant_permission":  7,
-				"/revoke_permission": 8,
+				"/start":              0,
+				"/send_push":          1,
+				"/count":              2,
+				"/find":               3,
+				"/delete":             4,
+				"/update":             5,
+				"/get_user":           6,
+				"/grant_permissions":  7,
+				"/revoke_permissions": 8,
+				"/show_permissions":   9,
 			}
 			arr := strings.Split(strings.Trim(update.Message.Text, " "), " ")
-			if _, ok := commands[arr[0]]; !ok {
+			command := arr[0]
+			if _, ok := commands[command]; !ok {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Invalid command. Try again")
 				bot.Send(msg)
 				continue
@@ -87,7 +89,7 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 			//check if user is super admin
 			isSuperAdmin := service.SuperAdminCheck(update.Message.From.UserName)
 			collection := db.DB(config.MongoDBName).C("admins")
-			if arr[0] == "/grant_permission" || arr[0] == "/revoke_permission" {
+			if command == "/grant_permissions" || command == "/revoke_permissions" || command == "/show_permissions" {
 				if !isSuperAdmin {
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Permission denied")
 					bot.Send(msg)
@@ -99,11 +101,11 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 					continue
 				}
-				if arr[0] == "/grant_permission" {
+				if command == "/grant_permissions" {
 					selector := bson.M{"name": admin.Name}
 					upsertdata := bson.M{"$addToSet": bson.M{"permissions": bson.M{"$each": admin.Permissions}}}
 					_, err = collection.Upsert(selector, upsertdata)
-				} else if arr[0] == "/revoke_permission" {
+				} else if command == "/revoke_permissions" {
 					selector := bson.M{"name": admin.Name}
 					revokePermissions := bson.M{"permissions": bson.M{"$in": admin.Permissions}}
 					revokedata := bson.M{"$pull": revokePermissions}
@@ -119,11 +121,11 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 					continue
 				}
-				msg := "user " + user.Name + " updated and now has next permissions: " + strings.Join(user.Permissions, ", ")
+				msg := "user " + user.Name + " has next permissions: " + strings.Join(user.Permissions, ", ")
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
 				continue
 			} else if !isSuperAdmin {
-				success, err := service.UserPermissionsCheck(update.Message.From.UserName, collection, arr[0])
+				success, err := service.UserPermissionsCheck(update.Message.From.UserName, collection, command)
 				if err != nil {
 					if err.Error() == "not found" {
 						msg := "user " + update.Message.From.UserName + " is not admin approved to access this app"
@@ -134,7 +136,7 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 					continue
 				}
 				if !success {
-					msg := "user " + update.Message.From.UserName + " has no permission to use " + arr[0] + " command"
+					msg := "user " + update.Message.From.UserName + " has no permission to use " + command + " command"
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, msg))
 					continue
 				}
@@ -148,7 +150,7 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 					continue
 				}
 			}
-			rq := common.RequestStruct{Params: req, Command: arr[0]}
+			rq := common.RequestStruct{Params: req, Command: command}
 			ctxStruct := common.ContextStruct{Request: rq, ChatID: update.Message.Chat.ID, Bot: bot, Client: c}
 			ctxV := context.WithValue(ctxC, "ContextStruct", ctxStruct)
 			ctxT, _ := context.WithTimeout(ctxV, time.Second*5)

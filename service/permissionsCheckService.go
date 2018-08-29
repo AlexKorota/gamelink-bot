@@ -2,6 +2,7 @@ package service
 
 import (
 	"gamelinkBot/common"
+	"gamelinkBot/config"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
@@ -32,4 +33,5 @@ func UserPermissionsCheck(user string, collection *mgo.Collection, command strin
 			return success, nil
 		}
 	}
+	return false, nil
 }

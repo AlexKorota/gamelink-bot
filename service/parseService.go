@@ -34,7 +34,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	permissionRegexp, err = regexp.Compile("(\\w+)\\s*\\[((\\s*(count|find|delete|send_push|update|get_user)\\s*;)*\\s*(count|find|delete|send_push|update|get_user))\\s*]")
+	permissionRegexp, err = regexp.Compile("(\\w+)\\s*(\\[((\\s*(count|find|delete|send_push|update|get_user)\\s*;)*\\s*(count|find|delete|send_push|update|get_user))\\s*])?")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -112,7 +112,7 @@ func ParsePermissionRequest(params string) (common.AdminRequestStruct, error) {
 		return AdminRequest, errors.New("bad admin request")
 	}
 	AdminRequest.Name = matches[1]
-	permissions := strings.Split(matches[2], ";")
+	permissions := strings.Split(matches[3], ";")
 	for _, v := range permissions {
 		AdminRequest.Permissions = append(AdminRequest.Permissions, strings.Trim(v, " "))
 	}
