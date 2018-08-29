@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"gamelinkBot/config"
 	"github.com/sirupsen/logrus"
 )
@@ -10,10 +11,14 @@ func Example() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	rts := reactor.RequesterResponder()
-	for rt := range rts {
-		logrus.Info(rt.Request())
-		logrus.Info(rt.UserName())
-		rt.Respond("пошел в жопу!")
+	ctx, _ := context.WithCancel(context.Background())
+	requests, _ := reactor.RequesterResponderWithContext(ctx)
+	for req := range requests {
+		//cmd, err := NewCommand(req)
+		//if err != nil {
+		//	req.Respond("Ху нью!")
+		//}
+		//cmd.ExecuteWithContext(ctx)
+		req.Respond("xyz")
 	}
 }
