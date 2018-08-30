@@ -17,10 +17,7 @@ func Example() {
 		logrus.Fatal(err)
 	}
 	for req := range requests {
-
-		// TODO: реализовать концепцию
-
-		//logrus.Info(req.Request())
+		req.Respond("xyz")
 		//cmd, err := NewCommand(req)
 		//if err != nil {
 		//	req.Respond("Ху нью!")
