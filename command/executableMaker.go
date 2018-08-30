@@ -13,30 +13,26 @@ type (
 	}
 
 	Maker interface {
-		MakeExecutable() (*baseCommand, error)
+		MakeExecutable() error
+		MakeRPCCommand() (*RPCCommand, error)
+		MakeAdminCommand() (*AdminCommand, error)
 		ParseCommand() (string, string, error)
-		ParseParams() ([]*prot.OneCriteriaStruct, error)
+		ParseRPCParams() ([]*prot.OneCriteriaStruct, error)
+		ParseAdminParams() ([]*prot.OneCriteriaStruct, error)
 	}
 )
 
-func (in inputData) MakeExecutable() (*baseCommand, error) {
+func (in inputData) MakeExecutable() error {
 	command, commandType, err := in.ParseCommand()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if commandType == "admin" && !in.user.IsAdmin() {
-		return nil, errors.New("Permission denied")
-	}
-	params, err := in.ParseParams()
-	if err != nil {
-		return nil, err
+		return errors.New("Permission denied")
 	}
 
-	if commandType == "user" && !in.user.IsAdmin() {
-		//проверка прав в базе данных
-	}
-	bc := baseCommand{command, commandType, params}
-	return &bc, nil
+	//bc := RPCCommand{command, commandType, params}
+	return nil
 }
 
 func (in inputData) ParseCommand() (string, string, error) {
@@ -59,6 +55,10 @@ func (in inputData) ParseCommand() (string, string, error) {
 	return command, commands[command], nil
 }
 
-func (in inputData) ParseParams() ([]*prot.OneCriteriaStruct, error) {
+func (in inputData) ParseRPCParams() ([]*prot.OneCriteriaStruct, error) {
+	return nil, nil
+}
+
+func (in inputData) ParseAdminParams() ([]string, error) {
 	return nil, nil
 }
