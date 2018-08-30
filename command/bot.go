@@ -28,7 +28,7 @@ type (
 
 	Reactor interface {
 		RequesterResponderWithContext(ctx context.Context) (<-chan RequesterResponder, error)
-		Respond(r Response)
+		Respond(r Response) error
 	}
 
 	Bot struct {
@@ -51,10 +51,10 @@ func NewBot(token string) (Reactor, error) {
 }
 
 func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan RequesterResponder, error) {
-	rrchan := make(chan RequesterResponder)
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+	rrchan := make(chan RequesterResponder)
 	go func(chanel chan<- RequesterResponder, ctx context.Context) {
 		if ctx.Err() != nil {
 			close(rrchan)
@@ -83,8 +83,9 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan Requeste
 	return rrchan, nil
 }
 
-func (b Bot) Respond(r Response) {
-	b.bot.Send(tgbotapi.NewMessage(r.ChatId(), r.Response()))
+func (b Bot) Respond(r Response) error {
+	_, err := b.bot.Send(tgbotapi.NewMessage(r.ChatId(), r.Response()))
+	return err
 }
 
 func (rt RoundTrip) Request() string {
@@ -103,8 +104,7 @@ func (rt RoundTrip) Response() string {
 	return rt.response
 }
 
-func (rt RoundTrip) Respond(message string) (e error) {
+func (rt RoundTrip) Respond(message string) error {
 	rt.response = message
-	rt.r.Respond(rt)
-	return
+	return rt.r.Respond(rt)
 }
