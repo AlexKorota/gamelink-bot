@@ -17,6 +17,11 @@ func Example() {
 		logrus.Fatal(err)
 	}
 	for req := range requests {
+		in := inputData{req.Request(), user{req.UserName()}}
+		bc, err := in.MakeExecutable()
+		if err != nil {
+			req.Respond(err.Error())
+		}
 
 		// TODO: реализовать концепцию
 
