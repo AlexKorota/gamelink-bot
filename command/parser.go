@@ -6,16 +6,16 @@ import (
 
 type (
 	Command interface {
-		Execute(ctx context.Context)
+		Execute(ctx context.Context) error
 	}
 
 	CommandFabric interface {
-		TryParse(req RequesterResponder) Command
+		TryParse(req RequesterResponder) (Command, error)
 	}
 
 	Parser interface {
 		RegisterFabric(cf CommandFabric)
-		TryParse(req RequesterResponder) Command
+		TryParse(req RequesterResponder) (Command, error)
 	}
 
 	CommandParser struct {

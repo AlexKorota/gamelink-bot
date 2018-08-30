@@ -17,12 +17,16 @@ func Example() {
 		logrus.Fatal(err)
 	}
 	for req := range requests {
-		req.Respond("xyz")
-		//cmd, err := NewCommand(req)
-		//if err != nil {
-		//	req.Respond("Ху нью!")
-		//}
-		//cmd.ExecuteWithContext(ctx)
+		cmd, err := SharedParser().TryParse(req)
+		if err != nil {
+			req.Respond(err.Error())
+			continue
+		}
+		err = cmd.Execute(ctx)
+		if err != nil {
+			req.Respond(err.Error())
+			continue
+		}
 	}
 	logrus.Info("exiting...")
 }
