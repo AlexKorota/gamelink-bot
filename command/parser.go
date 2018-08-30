@@ -12,6 +12,7 @@ type (
 	CommandFabric interface {
 		TryParse(req RequesterResponder) (Command, error)
 		RequireAdmin() bool
+		Require() []string
 	}
 
 	Parser interface {
