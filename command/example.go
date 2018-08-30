@@ -22,11 +22,7 @@ func Example() {
 			req.Respond(err.Error())
 			continue
 		}
-		err = cmd.Execute(ctx)
-		if err != nil {
-			req.Respond(err.Error())
-			continue
-		}
+		cmd.Execute(ctx)
 	}
 	logrus.Info("exiting...")
 }
