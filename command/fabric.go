@@ -56,7 +56,7 @@ func (c CountFabric) Require() []string {
 func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
 	var command CountCommand
 	ind := strings.Index(req.Request(), " ")
-	if req.Request()[:ind] != "/count" {
+	if ind < 0 || req.Request()[:ind] != "/count" {
 		return nil, nil
 	}
 	params := strings.Split(req.Request()[ind+1:], " ")
@@ -125,7 +125,7 @@ func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []s
 }
 
 func (cc CountCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{cc.params})
+	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return
