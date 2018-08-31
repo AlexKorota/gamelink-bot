@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"gamelinkBot/prot"
@@ -123,11 +124,11 @@ func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
 //	}
 //}
 //
-func (cc FindCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+func (fc FindCommand) Execute(ctx context.Context) {
+	r, err := SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: fc.params})
 	if err != nil {
-		cc.res.Respond(err.Error())
+		fc.res.Respond(err.Error())
 		return
 	}
-	cc.res.Respond(r.String())
+	fc.res.Respond(r.String())
 }
