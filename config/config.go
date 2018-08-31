@@ -60,12 +60,12 @@ func LoadEnvironment() {
 	if TBotToken == "" {
 		log.Fatal("telegram token must be set")
 	}
-	//SA := os.Getenv(superAdmin)
-	//if SA == "" {
-	//	log.Fatal("should be at least one super admin")
-	//}
-	//SuperAdmin = strings.Split(SA, ",")
-	//
+	SA := os.Getenv(superAdmin)
+	if SA == "" {
+		log.Fatal("should be at least one super admin")
+	}
+	SuperAdmin = strings.Split(SA, ",")
+
 	//MongoAddr = os.Getenv(mongoAddr)
 	//if MongoAddr == "" {
 	//	log.Fatal("mongo address must be set")
