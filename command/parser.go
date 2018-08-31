@@ -62,11 +62,11 @@ func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
 	if p.checker == nil {
 		return nil, errors.New("permission checked is not defined")
 	}
+	adm, err := p.checker.IsAdmin(req.UserName())
+	if err != nil {
+		return nil, err
+	}
 	for _, v := range p.fabrics {
-		adm, err := p.checker.IsAdmin(req.UserName())
-		if err != nil {
-			return nil, err
-		}
 		if v.RequireAdmin() && !adm {
 			return nil, errors.New("permission denied")
 		}
