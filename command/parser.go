@@ -85,7 +85,7 @@ func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
 			if !allowed {
 				return nil, errors.New("permission denied")
 			}
-      return cmd, nil
+			return cmd, nil
 		}
 	}
 	return nil, errors.New("can't recognise command")
