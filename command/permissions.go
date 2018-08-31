@@ -6,15 +6,19 @@ import (
 )
 
 type (
-	Checker struct {
+	MongoChecker struct {
 	}
 )
 
 func init() {
-	SharedParser().SetChecker(&Checker{})
+	SharedParser().SetChecker(NewMongoChecker())
 }
 
-func (u Checker) IsAdmin(userName string) (bool, error) {
+func NewMongoChecker() *MongoChecker {
+	return &MongoChecker{}
+}
+
+func (u MongoChecker) IsAdmin(userName string) (bool, error) {
 	//if u.username == "" {
 	//	return false
 	//}
@@ -26,6 +30,6 @@ func (u Checker) IsAdmin(userName string) (bool, error) {
 	return false, nil
 }
 
-func (u Checker) HasPermissions(userName string, permissions []string) (bool, error) {
+func (u MongoChecker) HasPermissions(userName string, permissions []string) (bool, error) {
 	return true, nil
 }
