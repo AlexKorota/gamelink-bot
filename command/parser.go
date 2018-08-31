@@ -3,8 +3,6 @@ package command
 import (
 	"context"
 	"errors"
-	"gamelinkBot/config"
-	"strings"
 	"sync"
 )
 
@@ -20,18 +18,19 @@ type (
 	}
 
 	Parser interface {
+		SetChecker(pc PermChecker)
 		RegisterFabric(cf CommandFabric)
 		TryParse(req RequesterResponder) (Command, error)
 	}
 
 	PermChecker interface {
-		IsAdmin(username string) bool
-		HasPermission(username string) bool
+		IsAdmin(userName string) (bool, error)
+		HasPermissions(userName string, permissions []string) (bool, error)
 	}
 
 	CommandParser struct {
 		fabrics []CommandFabric
-		cheker  PermChecker // проверяет привелегии
+		checker PermChecker // проверяет привелегии
 	}
 )
 
@@ -47,6 +46,12 @@ func SharedParser() Parser {
 	return parser
 }
 
+func (p *CommandParser) SetChecker(pc PermChecker) {
+	if p != nil {
+		p.checker = pc
+	}
+}
+
 func (p *CommandParser) RegisterFabric(cf CommandFabric) {
 	if p != nil {
 		p.fabrics = append(p.fabrics, cf)
@@ -54,18 +59,29 @@ func (p *CommandParser) RegisterFabric(cf CommandFabric) {
 }
 
 func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
+	if p.checker == nil {
+		return nil, errors.New("permission checked is not defined")
+	}
 	for _, v := range p.fabrics {
-		//TODO: добавить метод проверки привелегий
 		cmd, err := v.TryParse(req)
 		if err != nil {
 			return nil, err
 		}
+		var adm bool
 		if v.RequireAdmin() {
-			if !p.IsAdmin(req.UserName()) {
+			adm, err = p.checker.IsAdmin(req.UserName())
+			if err != nil {
+				return nil, err
+			}
+			if !adm {
 				return nil, errors.New("permission denied")
 			}
 		} else {
-			if !(p.IsAdmin(req.UserName()) || p.HasPermission(req.UserName())) {
+			allowed, err := p.checker.HasPermissions(req.UserName(), v.Require())
+			if err != nil {
+				return nil, err
+			}
+			if !(adm || allowed) {
 				return nil, errors.New("permission denied")
 			}
 		}
@@ -74,20 +90,4 @@ func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
 		}
 	}
 	return nil, errors.New("can't recognise command")
-}
-
-func (p CommandParser) IsAdmin(username string) bool {
-	if username == "" {
-		return false
-	}
-	for _, v := range config.SuperAdmin {
-		if username == strings.Trim(v, " ") {
-			return true
-		}
-	}
-	return false
-}
-
-func (p CommandParser) HasPermission(username string) bool {
-	return false
 }

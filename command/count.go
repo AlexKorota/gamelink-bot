@@ -46,7 +46,7 @@ func init() {
 }
 
 func (c CountFabric) RequireAdmin() bool {
-	return false
+	return true
 }
 
 func (c CountFabric) Require() []string {
