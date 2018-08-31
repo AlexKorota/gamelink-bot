@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
 	"gamelinkBot/common"
 	"gamelinkBot/config"
 	"gopkg.in/mgo.v2"
@@ -51,10 +50,8 @@ func (u MongoChecker) HasPermissions(userName string, permissions []string) (boo
 		return false, err
 	}
 	for _, cmdp := range permissions {
-		fmt.Println("a" + cmdp)
 		successOne := false
 		for _, up := range user.Permissions {
-			fmt.Println("b" + up)
 			if up == cmdp {
 				successOne = true
 				break
