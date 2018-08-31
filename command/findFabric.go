@@ -53,7 +53,7 @@ func (f FindFabric) Require() []string {
 }
 
 func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
-	var command CountCommand
+	var command FindCommand
 	ind := strings.Index(req.Request(), " ")
 	if ind < 0 || req.Request()[:ind] != "/find" {
 		return nil, nil
@@ -123,11 +123,11 @@ func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
 //	}
 //}
 //
-//func (cc CountCommand) Execute(ctx context.Context) {
-//	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
-//	if err != nil {
-//		cc.res.Respond(err.Error())
-//		return
-//	}
-//	cc.res.Respond(r.String())
-//}
+func (cc FindCommand) Execute(ctx context.Context) {
+	r, err := SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	if err != nil {
+		cc.res.Respond(err.Error())
+		return
+	}
+	cc.res.Respond(r.String())
+}
