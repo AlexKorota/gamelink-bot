@@ -40,7 +40,9 @@ func init() {
 	}
 }
 
-func ParseRequest(params []string) ([]*prot.OneCriteriaStruct, error) {
+func ParseRequest(commandString string) ([]*prot.OneCriteriaStruct, error) {
+	ind := strings.Index(commandString, " ")
+	params := strings.Split(commandString[ind+1:], " ")
 	var multiCriteria []*prot.OneCriteriaStruct
 	for _, v := range params {
 		var matches []string

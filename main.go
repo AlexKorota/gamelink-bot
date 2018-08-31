@@ -144,13 +144,13 @@ func telegramBot(c prot.AdminServiceClient, wg *sync.WaitGroup, db *mgo.Session)
 			}
 
 			var req []*prot.OneCriteriaStruct
-			if len(arr) > 1 {
-				req, err = service.ParseRequest(arr[1:])
-				if err != nil {
-					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
-					continue
-				}
-			}
+			//if len(arr) > 1 {
+			//	req, err = service.ParseRequest(arr[1:])
+			//	if err != nil {
+			//		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			//		continue
+			//	}
+			//}
 			rq := common.RequestStruct{Params: req, Command: command}
 			ctxStruct := common.ContextStruct{Request: rq, ChatID: update.Message.Chat.ID, Bot: bot, Client: c}
 			ctxV := context.WithValue(ctxC, "ContextStruct", ctxStruct)
