@@ -66,12 +66,12 @@ func LoadEnvironment() {
 	}
 	SuperAdmin = strings.Split(SA, ",")
 
-	//MongoAddr = os.Getenv(mongoAddr)
-	//if MongoAddr == "" {
-	//	log.Fatal("mongo address must be set")
-	//}
-	//MongoDBName = os.Getenv(mongoDBName)
-	//if MongoAddr == "" {
-	//	log.Fatal("mongo DB name must be set")
-	//}
+	MongoAddr = os.Getenv(mongoAddr)
+	if MongoAddr == "" {
+		log.Fatal("mongo address must be set")
+	}
+	MongoDBName = os.Getenv(mongoDBName)
+	if MongoAddr == "" {
+		log.Fatal("mongo DB name must be set")
+	}
 }
