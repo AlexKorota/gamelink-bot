@@ -84,8 +84,12 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan Requeste
 }
 
 func (b Bot) Respond(r Response) error {
+	if r.Response() == "" {
+		return nil
+	}
 	_, err := b.bot.Send(tgbotapi.NewMessage(r.ChatId(), r.Response()))
 	return err
+
 }
 
 func (rt RoundTrip) Request() string {
