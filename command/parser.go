@@ -75,11 +75,14 @@ func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
 			return nil, err
 		}
 		if cmd != nil {
+			if adm {
+				return cmd, nil
+			}
 			allowed, err := p.checker.HasPermissions(req.UserName(), v.Require())
 			if err != nil {
 				return nil, err
 			}
-			if !(adm || allowed) {
+			if !allowed {
 				return nil, errors.New("permission denied")
 			}
 			return cmd, nil
