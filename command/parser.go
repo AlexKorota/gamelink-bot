@@ -62,30 +62,28 @@ func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
 	if p.checker == nil {
 		return nil, errors.New("permission checked is not defined")
 	}
+	adm, err := p.checker.IsAdmin(req.UserName())
+	if err != nil {
+		return nil, err
+	}
 	for _, v := range p.fabrics {
+		if v.RequireAdmin() && !adm {
+			return nil, errors.New("permission denied")
+		}
 		cmd, err := v.TryParse(req)
 		if err != nil {
 			return nil, err
 		}
-		var adm bool
-		if v.RequireAdmin() {
-			adm, err = p.checker.IsAdmin(req.UserName())
-			if err != nil {
-				return nil, err
-			}
-			if !adm {
-				return nil, errors.New("permission denied")
-			}
-		} else {
-			allowed, err := p.checker.HasPermissions(req.UserName(), v.Require())
-			if err != nil {
-				return nil, err
-			}
-			if !(adm || allowed) {
-				return nil, errors.New("permission denied")
-			}
-		}
 		if cmd != nil {
+			if !adm {
+				allowed, err := p.checker.HasPermissions(req.UserName(), v.Require())
+				if err != nil {
+					return nil, err
+				}
+				if !allowed {
+					return nil, errors.New("permission denied")
+				}
+			}
 			return cmd, nil
 		}
 	}
