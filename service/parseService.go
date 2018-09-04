@@ -104,6 +104,15 @@ func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []s
 	}
 }
 
+func CompareParseCommand(str, cmd string) ([]*prot.OneCriteriaStruct, error) {
+	ind := strings.Index(str, " ")
+	if ind < 0 || str[:ind] != cmd {
+		return nil, nil
+	}
+	params := strings.Split(str[ind+1:], " ")
+	return ParseRequest(params)
+}
+
 func ParsePermissionRequest(params string) (common.AdminRequestStruct, error) {
 	var AdminRequest common.AdminRequestStruct
 	var matches []string

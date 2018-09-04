@@ -4,15 +4,13 @@ import (
 	"context"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
-	"strings"
 )
 
 type CountFabric struct{}
 
 type CountCommand struct {
-	params   []*prot.OneCriteriaStruct
-	res      Responder
-	userName string
+	params []*prot.OneCriteriaStruct
+	res    Responder
 }
 
 func init() {
@@ -28,14 +26,13 @@ func (c CountFabric) Require() []string {
 }
 
 func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
-	var command CountCommand
-	ind := strings.Index(req.Request(), " ")
-	if ind < 0 || req.Request()[:ind] != "/count" {
-		return nil, nil
+	var (
+		command CountCommand
+		err     error
+	)
+	if command.params, err = service.CompareParseCommand(req.Request(), "/count"); err != nil {
+		return nil, err
 	}
-	params := strings.Split(req.Request()[ind+1:], " ")
-	service.ParseRequest(params)
-	command.userName = req.UserName()
 	command.res = req
 	return command, nil
 }
