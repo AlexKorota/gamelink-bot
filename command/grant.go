@@ -43,11 +43,9 @@ func (c GrantFabric) TryParse(req RequesterResponder) (Command, error) {
 }
 
 func (cc GrantCommand) Execute(ctx context.Context) {
-	//
 	//if err != nil {
 	//	cc.res.Respond(err.Error())
 	//	return
 	//}
-	//
 	//cc.res.Respond(r.String())
 }
