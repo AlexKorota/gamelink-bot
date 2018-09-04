@@ -15,7 +15,7 @@ type (
 )
 
 const (
-	commanStr = "count"
+	commandStr = "count"
 )
 
 func init() {
@@ -27,7 +27,7 @@ func (c CountFabric) RequireAdmin() bool {
 }
 
 func (c CountFabric) Require() []string {
-	return []string{commanStr}
+	return []string{commandStr}
 }
 
 func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
@@ -35,7 +35,7 @@ func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
 		command CountCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commanStr); err != nil {
+	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandStr); err != nil {
 		return nil, err
 	}
 	command.res = req
