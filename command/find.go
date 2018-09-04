@@ -27,14 +27,24 @@ func (f FindFabric) Require() []string {
 	return []string{"find"}
 }
 
-func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
+func (f FindFabric) Command() string {
+	return "/find"
+}
+
+func (f FindFabric) TryParse(req RequesterResponder) (Command, error) {
 	var command FindCommand
+	var err error
 	ind := strings.Index(req.Request(), " ")
-	if ind < 0 || req.Request()[:ind] != "/find" {
+	if ind < 0 {
 		return nil, nil
 	}
-	params := strings.Split(req.Request()[ind+1:], " ")
-	service.ParseRequest(params)
+	if req.Request()[:ind] != f.Command() {
+		return nil, nil
+	}
+	command.params, err = service.ParseRequest(req.Request())
+	if err != nil {
+		return nil, nil
+	}
 	command.userName = req.UserName()
 	command.res = req
 	return command, nil

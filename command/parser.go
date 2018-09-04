@@ -15,6 +15,7 @@ type (
 		TryParse(req RequesterResponder) (Command, error)
 		RequireAdmin() bool
 		Require() []string
+		Command() string
 	}
 
 	Parser interface {

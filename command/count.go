@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
@@ -25,6 +26,10 @@ func (c CountFabric) Require() []string {
 	return []string{"count"}
 }
 
+func (c CountFabric) Command() string {
+	return "/count"
+}
+
 func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
 	var (
 		command CountCommand
@@ -33,11 +38,13 @@ func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
 	if command.params, err = service.CompareParseCommand(req.Request(), "/count"); err != nil {
 		return nil, err
 	}
+
 	command.res = req
 	return command, nil
 }
 
 func (cc CountCommand) Execute(ctx context.Context) {
+	fmt.Println(cc)
 	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
 		cc.res.Respond(err.Error())
