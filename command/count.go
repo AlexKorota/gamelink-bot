@@ -6,12 +6,17 @@ import (
 	"gamelinkBot/service"
 )
 
-type CountFabric struct{}
+type (
+	CountFabric  struct{}
+	CountCommand struct {
+		params []*prot.OneCriteriaStruct
+		res    Responder
+	}
+)
 
-type CountCommand struct {
-	params []*prot.OneCriteriaStruct
-	res    Responder
-}
+const (
+	commanStr = "count"
+)
 
 func init() {
 	SharedParser().RegisterFabric(CountFabric{})
@@ -22,7 +27,7 @@ func (c CountFabric) RequireAdmin() bool {
 }
 
 func (c CountFabric) Require() []string {
-	return []string{"count"}
+	return []string{commanStr}
 }
 
 func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
@@ -30,7 +35,7 @@ func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
 		command CountCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/count"); err != nil {
+	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commanStr); err != nil {
 		return nil, err
 	}
 	command.res = req
