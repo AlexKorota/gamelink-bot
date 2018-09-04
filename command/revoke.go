@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"gamelinkBot/service"
+	"strings"
 )
 
 type (
@@ -15,7 +16,7 @@ type (
 )
 
 const (
-	commandRevoke = "grant_permissions"
+	commandRevoke = "revoke_permissions"
 )
 
 func init() {
@@ -43,11 +44,10 @@ func (c RevokeFabric) TryParse(req RequesterResponder) (Command, error) {
 }
 
 func (cc RevokeCommand) Execute(ctx context.Context) {
-	//
-	//if err != nil {
-	//	cc.res.Respond(err.Error())
-	//	return
-	//}
-	//
-	//cc.res.Respond(r.String())
+	user, err := NewMongoWorker().RevokePermissions(cc.userName, cc.params)
+	if err != nil {
+		cc.res.Respond(err.Error())
+		return
+	}
+	cc.res.Respond("Success " + user.Name + " now has next permissions: " + strings.Join(user.Permissions, ", "))
 }

@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"gamelinkBot/service"
+	"strings"
 )
 
 type (
@@ -43,9 +44,10 @@ func (c GrantFabric) TryParse(req RequesterResponder) (Command, error) {
 }
 
 func (cc GrantCommand) Execute(ctx context.Context) {
-	//if err != nil {
-	//	cc.res.Respond(err.Error())
-	//	return
-	//}
-	//cc.res.Respond(r.String())
+	user, err := NewMongoWorker().GrantPermissions(cc.userName, cc.params)
+	if err != nil {
+		cc.res.Respond(err.Error())
+		return
+	}
+	cc.res.Respond("Success " + user.Name + " now has next permissions: " + strings.Join(user.Permissions, ", "))
 }

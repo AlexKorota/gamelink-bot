@@ -72,7 +72,8 @@ func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
 		}
 		cmd, err := v.TryParse(req)
 		if err != nil {
-			return nil, err
+			continue
+			//return nil, err // А зачем нам тут ретурн?
 		}
 		if cmd != nil {
 			if adm {

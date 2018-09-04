@@ -106,7 +106,7 @@ func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []s
 func CompareParseCommand(str, cmd string) ([]*prot.OneCriteriaStruct, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return nil, nil
+		return nil, errors.New("wrong command")
 	}
 	params := strings.Split(str[ind+1:], " ")
 	return ParseRequest(params)
@@ -115,7 +115,7 @@ func CompareParseCommand(str, cmd string) ([]*prot.OneCriteriaStruct, error) {
 func CompareParsePermissionCommand(str, cmd string) (string, []string, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return "", nil, nil
+		return "", nil, errors.New("wrong permission command")
 	}
 	return ParsePermissionRequest(str[ind+1:])
 }
@@ -128,5 +128,11 @@ func ParsePermissionRequest(params string) (string, []string, error) {
 	}
 	userName := matches[1]
 	permissions := strings.Split(matches[3], ";")
+	for k, v := range permissions {
+		permissions[k] = strings.Trim(v, " ")
+	}
+	if matches == nil {
+		return "", nil, errors.New("there is no available params")
+	}
 	return userName, permissions, nil
 }
