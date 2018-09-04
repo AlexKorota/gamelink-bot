@@ -4,16 +4,20 @@ import (
 	"context"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
-	"strings"
 )
 
-type FindFabric struct{}
+type (
+	FindFabric struct{}
 
-type FindCommand struct {
-	params   []*prot.OneCriteriaStruct
-	res      Responder
-	userName string
-}
+	FindCommand struct {
+		params []*prot.OneCriteriaStruct
+		res    Responder
+	}
+)
+
+const (
+	commandFind = "find"
+)
 
 func init() {
 	SharedParser().RegisterFabric(FindFabric{})
@@ -24,18 +28,17 @@ func (f FindFabric) RequireAdmin() bool {
 }
 
 func (f FindFabric) Require() []string {
-	return []string{"find"}
+	return []string{commandFind}
 }
 
 func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
-	var command FindCommand
-	ind := strings.Index(req.Request(), " ")
-	if ind < 0 || req.Request()[:ind] != "/find" {
-		return nil, nil
+	var (
+		command FindCommand
+		err     error
+	)
+	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandFind); err != nil {
+		return nil, err
 	}
-	params := strings.Split(req.Request()[ind+1:], " ")
-	service.ParseRequest(params)
-	command.userName = req.UserName()
 	command.res = req
 	return command, nil
 }
