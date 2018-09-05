@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"gamelinkBot/common"
 	"gamelinkBot/prot"
 	"log"
 	"regexp"
@@ -107,23 +106,33 @@ func appendToMultiCriteria(multiCriteria *[]*prot.OneCriteriaStruct, matches []s
 func CompareParseCommand(str, cmd string) ([]*prot.OneCriteriaStruct, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return nil, nil
+		return nil, errors.New("wrong command")
 	}
 	params := strings.Split(str[ind+1:], " ")
 	return ParseRequest(params)
 }
 
-func ParsePermissionRequest(params string) (common.AdminRequestStruct, error) {
-	var AdminRequest common.AdminRequestStruct
+func CompareParsePermissionCommand(str, cmd string) (string, []string, error) {
+	ind := strings.Index(str, " ")
+	if ind < 0 || str[:ind] != cmd {
+		return "", nil, errors.New("wrong permission command")
+	}
+	return ParsePermissionRequest(str[ind+1:])
+}
+
+func ParsePermissionRequest(params string) (string, []string, error) {
 	var matches []string
 	matches = permissionRegexp.FindStringSubmatch(params)
 	if matches == nil {
-		return AdminRequest, errors.New("bad admin request")
+		return "", nil, errors.New("bad admin request")
 	}
-	AdminRequest.Name = matches[1]
+	userName := matches[1]
 	permissions := strings.Split(matches[3], ";")
-	for _, v := range permissions {
-		AdminRequest.Permissions = append(AdminRequest.Permissions, strings.Trim(v, " "))
+	for k, v := range permissions {
+		permissions[k] = strings.Trim(v, " ")
 	}
-	return AdminRequest, nil
+	if matches == nil {
+		return "", nil, errors.New("there is no available params")
+	}
+	return userName, permissions, nil
 }
