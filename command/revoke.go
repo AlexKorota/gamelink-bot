@@ -2,6 +2,8 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
 	"gamelinkBot/service"
 	"strings"
 )
@@ -13,7 +15,7 @@ type (
 	RevokeCommand struct {
 		userName string
 		params   []string
-		res      Responder
+		res      bot.Responder
 	}
 )
 
@@ -24,7 +26,7 @@ const (
 
 //init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(RevokeFabric{})
+	parser.SharedParser().RegisterFabric(RevokeFabric{})
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -38,7 +40,7 @@ func (c RevokeFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c RevokeFabric) TryParse(req RequesterResponder) (Command, error) {
+func (c RevokeFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command RevokeCommand
 		err     error

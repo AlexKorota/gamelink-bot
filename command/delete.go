@@ -2,6 +2,8 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
@@ -12,7 +14,7 @@ type (
 	//DeleteCommand - struct for delete command
 	DeleteCommand struct {
 		params []*prot.OneCriteriaStruct
-		res    Responder
+		res    bot.Responder
 	}
 )
 
@@ -23,7 +25,7 @@ const (
 
 //init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(DeleteFabric{})
+	parser.SharedParser().RegisterFabric(DeleteFabric{})
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -37,7 +39,7 @@ func (c DeleteFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c DeleteFabric) TryParse(req RequesterResponder) (Command, error) {
+func (c DeleteFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command DeleteCommand
 		err     error

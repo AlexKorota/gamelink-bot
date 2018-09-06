@@ -2,6 +2,8 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
@@ -12,7 +14,7 @@ type (
 	//CountCommand - struct for count command
 	CountCommand struct {
 		params []*prot.OneCriteriaStruct
-		res    Responder
+		res    bot.Responder
 	}
 )
 
@@ -23,7 +25,7 @@ const (
 
 //init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(CountFabric{})
+	parser.SharedParser().RegisterFabric(CountFabric{})
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -37,7 +39,7 @@ func (c CountFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c CountFabric) TryParse(req RequesterResponder) (Command, error) {
+func (c CountFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command CountCommand
 		err     error

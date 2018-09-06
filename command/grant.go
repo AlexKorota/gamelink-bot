@@ -2,6 +2,8 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
 	"gamelinkBot/service"
 	"strings"
 )
@@ -13,7 +15,7 @@ type (
 	GrantCommand struct {
 		userName string
 		params   []string
-		res      Responder
+		res      bot.Responder
 	}
 )
 
@@ -24,7 +26,7 @@ const (
 
 //init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(GrantFabric{})
+	parser.SharedParser().RegisterFabric(GrantFabric{})
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -38,7 +40,7 @@ func (c GrantFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c GrantFabric) TryParse(req RequesterResponder) (Command, error) {
+func (c GrantFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command GrantCommand
 		err     error

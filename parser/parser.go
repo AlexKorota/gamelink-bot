@@ -1,8 +1,9 @@
-package command
+package parser
 
 import (
 	"context"
 	"errors"
+	"gamelinkBot/bot"
 	"sync"
 )
 
@@ -13,7 +14,7 @@ type (
 	}
 	//CommandFabric - command fabric interface
 	CommandFabric interface {
-		TryParse(req RequesterResponder) (Command, error)
+		TryParse(req bot.RequesterResponder) (Command, error)
 		RequireAdmin() bool
 		Require() []string
 	}
@@ -21,7 +22,7 @@ type (
 	Parser interface {
 		SetChecker(pc PermChecker)
 		RegisterFabric(cf CommandFabric)
-		TryParse(req RequesterResponder) (Command, error)
+		TryParse(req bot.RequesterResponder) (Command, error)
 	}
 	//PermChecker - permission checker interface
 	PermChecker interface {
@@ -63,7 +64,7 @@ func (p *CommandParser) RegisterFabric(cf CommandFabric) {
 }
 
 //TryParse - tries to parse the request in a loop using array factories
-func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
+func (p CommandParser) TryParse(req bot.RequesterResponder) (Command, error) {
 	if p.checker == nil {
 		return nil, errors.New("permission checked is not defined")
 	}

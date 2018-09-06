@@ -1,8 +1,9 @@
 package main
 
 import (
-	"gamelinkBot/command"
+	"gamelinkBot/bot"
 	"gamelinkBot/config"
+	"gamelinkBot/parser"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
@@ -17,7 +18,7 @@ func init() {
 }
 
 func main() {
-	reactor, err := command.NewBot(config.TBotToken)
+	reactor, err := bot.NewBot(config.TBotToken)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 	for req := range requests {
-		cmd, err := command.SharedParser().TryParse(req)
+		cmd, err := parser.SharedParser().TryParse(req)
 		if err != nil {
 			req.Respond(err.Error())
 			continue

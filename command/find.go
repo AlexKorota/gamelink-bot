@@ -2,6 +2,8 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
 	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
@@ -12,7 +14,7 @@ type (
 	//FindCommand - struct for find command
 	FindCommand struct {
 		params []*prot.OneCriteriaStruct
-		res    Responder
+		res    bot.Responder
 	}
 )
 
@@ -23,7 +25,7 @@ const (
 
 //init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(FindFabric{})
+	parser.SharedParser().RegisterFabric(FindFabric{})
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -37,7 +39,7 @@ func (f FindFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
+func (c FindFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command FindCommand
 		err     error

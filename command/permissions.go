@@ -3,6 +3,7 @@ package command
 import (
 	"errors"
 	"gamelinkBot/config"
+	"gamelinkBot/parser"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
@@ -21,9 +22,9 @@ type (
 	}
 )
 
-//init - add mongoWorker(permChecker) to parser
+//init - add MongoWorker(permChecker) to parser
 func init() {
-	SharedParser().SetChecker(NewMongoWorker())
+	parser.SharedParser().SetChecker(NewMongoWorker())
 }
 
 //NewMongoWorker - set connection to mongoDB
