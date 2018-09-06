@@ -7,8 +7,9 @@ import (
 )
 
 type (
+	//FindFabric - strucet for find fabric
 	FindFabric struct{}
-
+	//FindCommand - struct for find command
 	FindCommand struct {
 		params []*prot.OneCriteriaStruct
 		res    Responder
@@ -16,21 +17,26 @@ type (
 )
 
 const (
+	//commandFind - const for command
 	commandFind = "find"
 )
 
+//init - func for register fabric in parser
 func init() {
 	SharedParser().RegisterFabric(FindFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (f FindFabric) RequireAdmin() bool {
 	return false
 }
 
+//Require - return array of needed permissions
 func (f FindFabric) Require() []string {
 	return []string{commandFind}
 }
 
+//TryParse - func for parsing request
 func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
 	var (
 		command FindCommand
@@ -43,6 +49,7 @@ func (c FindFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (fc FindCommand) Execute(ctx context.Context) {
 	r, err := SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: fc.params})
 	if err != nil {

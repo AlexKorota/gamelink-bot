@@ -7,7 +7,9 @@ import (
 )
 
 type (
-	DeleteFabric  struct{}
+	//DeleteFabric - struct for DeleteFabric
+	DeleteFabric struct{}
+	//DeleteCommand - struct for delete command
 	DeleteCommand struct {
 		params []*prot.OneCriteriaStruct
 		res    Responder
@@ -15,21 +17,26 @@ type (
 )
 
 const (
+	//commandDelete - const for command
 	commandDelete = "count"
 )
 
+//init - func for register fabric in parser
 func init() {
 	SharedParser().RegisterFabric(DeleteFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (c DeleteFabric) RequireAdmin() bool {
 	return false
 }
 
+//Require - return array of needed permissions
 func (c DeleteFabric) Require() []string {
 	return []string{commandDelete}
 }
 
+//TryParse - func for parsing request
 func (c DeleteFabric) TryParse(req RequesterResponder) (Command, error) {
 	var (
 		command DeleteCommand
@@ -42,6 +49,7 @@ func (c DeleteFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (cc DeleteCommand) Execute(ctx context.Context) {
 	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
