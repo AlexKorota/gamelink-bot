@@ -1,4 +1,4 @@
-package command
+package rpc
 
 import (
 	"gamelinkBot/config"

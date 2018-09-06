@@ -4,6 +4,7 @@ import (
 	"context"
 	"gamelinkBot/bot"
 	"gamelinkBot/parser"
+	"gamelinkBot/permission"
 	"gamelinkBot/service"
 	"strings"
 )
@@ -54,7 +55,7 @@ func (c GrantFabric) TryParse(req bot.RequesterResponder) (parser.Command, error
 
 //Execute - execute command
 func (cc GrantCommand) Execute(ctx context.Context) {
-	user, err := NewMongoWorker().GrantPermissions(cc.userName, cc.params)
+	user, err := permission.NewMongoWorker().GrantPermissions(cc.userName, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

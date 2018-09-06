@@ -4,6 +4,7 @@ import (
 	"context"
 	"gamelinkBot/bot"
 	"gamelinkBot/parser"
+	"gamelinkBot/permission"
 	"gamelinkBot/service"
 	"strings"
 )
@@ -54,7 +55,7 @@ func (c RevokeFabric) TryParse(req bot.RequesterResponder) (parser.Command, erro
 
 //Execute - execute command
 func (cc RevokeCommand) Execute(ctx context.Context) {
-	user, err := NewMongoWorker().RevokePermissions(cc.userName, cc.params)
+	user, err := permission.NewMongoWorker().RevokePermissions(cc.userName, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

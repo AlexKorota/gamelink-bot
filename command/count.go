@@ -5,6 +5,7 @@ import (
 	"gamelinkBot/bot"
 	"gamelinkBot/parser"
 	"gamelinkBot/prot"
+	"gamelinkBot/rpc"
 	"gamelinkBot/service"
 )
 
@@ -53,7 +54,7 @@ func (c CountFabric) TryParse(req bot.RequesterResponder) (parser.Command, error
 
 //Execute - execute command
 func (cc CountCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	r, err := rpc.SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

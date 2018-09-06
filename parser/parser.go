@@ -66,7 +66,7 @@ func (p *CommandParser) RegisterFabric(cf CommandFabric) {
 //TryParse - tries to parse the request in a loop using array factories
 func (p CommandParser) TryParse(req bot.RequesterResponder) (Command, error) {
 	if p.checker == nil {
-		return nil, errors.New("permission checked is not defined")
+		return nil, errors.New("permission checker is not defined")
 	}
 	adm, err := p.checker.IsAdmin(req.UserName())
 	if err != nil {

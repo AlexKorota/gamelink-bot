@@ -5,6 +5,7 @@ import (
 	"gamelinkBot/bot"
 	"gamelinkBot/parser"
 	"gamelinkBot/prot"
+	"gamelinkBot/rpc"
 	"gamelinkBot/service"
 )
 
@@ -53,7 +54,7 @@ func (c FindFabric) TryParse(req bot.RequesterResponder) (parser.Command, error)
 
 //Execute - execute command
 func (fc FindCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: fc.params})
+	r, err := rpc.SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: fc.params})
 	if err != nil {
 		fc.res.Respond(err.Error())
 		return
