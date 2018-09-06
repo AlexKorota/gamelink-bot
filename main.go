@@ -2,8 +2,10 @@ package main
 
 import (
 	"gamelinkBot/bot"
+	_ "gamelinkBot/command"
 	"gamelinkBot/config"
 	"gamelinkBot/parser"
+	_ "gamelinkBot/permission"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
