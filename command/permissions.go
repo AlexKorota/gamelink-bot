@@ -10,20 +10,23 @@ import (
 )
 
 type (
+	//MongoWorker - strucnt for work with MongoDB
 	MongoWorker struct {
 		db *mgo.Session
 	}
-
+	//AdminRequestStruc - admin data struct from mongoDB
 	AdminRequestStruct struct {
 		Name        string
 		Permissions []string
 	}
 )
 
+//init - add mongoWorker(permChecker) to parser
 func init() {
 	SharedParser().SetChecker(NewMongoWorker())
 }
 
+//NewMongoWorker - set connection to mongoDB
 func NewMongoWorker() *MongoWorker {
 	db, err := mgo.Dial(config.MongoAddr)
 	if err != nil {
@@ -32,6 +35,7 @@ func NewMongoWorker() *MongoWorker {
 	return &MongoWorker{db: db}
 }
 
+//IsAdmin - check if user is superAdmin
 func (u MongoWorker) IsAdmin(userName string) (bool, error) {
 	if userName == "" {
 		return false, nil
@@ -44,6 +48,7 @@ func (u MongoWorker) IsAdmin(userName string) (bool, error) {
 	return false, nil
 }
 
+//HasPermissions - check (from mongo) does the user who send command have the necessary permissions
 func (u MongoWorker) HasPermissions(userName string, permissions []string) (bool, error) {
 	user := AdminRequestStruct{}
 	err := u.db.DB(config.MongoDBName).C("admins").Find(bson.M{"name": userName}).One(&user)
@@ -68,6 +73,7 @@ func (u MongoWorker) HasPermissions(userName string, permissions []string) (bool
 	return true, nil
 }
 
+//GrantPermissions - update/create permissions entry for user (in MongoDB)
 func (u MongoWorker) GrantPermissions(userName string, permissions []string) (*AdminRequestStruct, error) {
 	selector := bson.M{"name": userName}
 	upsertdata := bson.M{"$addToSet": bson.M{"permissions": bson.M{"$each": permissions}}}
@@ -78,6 +84,7 @@ func (u MongoWorker) GrantPermissions(userName string, permissions []string) (*A
 	return u.FindUser(userName)
 }
 
+//RevokePermissions - revoke user permissions (delete it from mongo entry)
 func (u MongoWorker) RevokePermissions(userName string, permissions []string) (*AdminRequestStruct, error) {
 	selector := bson.M{"name": userName}
 	revokePermissions := bson.M{"permissions": bson.M{"$in": permissions}}
@@ -89,6 +96,7 @@ func (u MongoWorker) RevokePermissions(userName string, permissions []string) (*
 	return u.FindUser(userName)
 }
 
+//FindUser - find user entry in mongo
 func (u MongoWorker) FindUser(userName string) (*AdminRequestStruct, error) {
 	user := AdminRequestStruct{}
 	err := u.db.DB(config.MongoDBName).C("admins").Find(bson.M{"name": userName}).One(&user)

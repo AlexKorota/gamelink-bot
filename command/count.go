@@ -17,7 +17,7 @@ type (
 )
 
 const (
-	//commandCount - const for command
+	//commandCount - const for command name
 	commandCount = "count"
 )
 

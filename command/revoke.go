@@ -7,7 +7,9 @@ import (
 )
 
 type (
-	RevokeFabric  struct{}
+	//RqvokeFabric - struct for Revoke fabric
+	RevokeFabric struct{}
+	//RevokeCommand - struct for revoke command
 	RevokeCommand struct {
 		userName string
 		params   []string
@@ -16,21 +18,26 @@ type (
 )
 
 const (
+	//commandRevoke - const for revoke command name
 	commandRevoke = "revoke_permissions"
 )
 
+//init - func for register fabric in parser
 func init() {
 	SharedParser().RegisterFabric(RevokeFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (c RevokeFabric) RequireAdmin() bool {
 	return true
 }
 
+//Require - return array of needed permissions
 func (c RevokeFabric) Require() []string {
 	return []string{commandRevoke}
 }
 
+//TryParse - func for parsing request
 func (c RevokeFabric) TryParse(req RequesterResponder) (Command, error) {
 	var (
 		command RevokeCommand
@@ -43,6 +50,7 @@ func (c RevokeFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (cc RevokeCommand) Execute(ctx context.Context) {
 	user, err := NewMongoWorker().RevokePermissions(cc.userName, cc.params)
 	if err != nil {

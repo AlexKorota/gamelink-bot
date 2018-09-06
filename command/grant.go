@@ -7,7 +7,9 @@ import (
 )
 
 type (
-	GrantFabric  struct{}
+	//GrantFabric - struct for Grant fabric
+	GrantFabric struct{}
+	//GrantCommand - struct for grant command
 	GrantCommand struct {
 		userName string
 		params   []string
@@ -16,21 +18,26 @@ type (
 )
 
 const (
+	//commandGrant - const for command name
 	commandGrant = "grant_permissions"
 )
 
+//init - func for register fabric in parser
 func init() {
 	SharedParser().RegisterFabric(GrantFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (c GrantFabric) RequireAdmin() bool {
 	return true
 }
 
+//Require - return array of needed permissions
 func (c GrantFabric) Require() []string {
 	return []string{commandGrant}
 }
 
+//TryParse - func for parsing request
 func (c GrantFabric) TryParse(req RequesterResponder) (Command, error) {
 	var (
 		command GrantCommand
@@ -43,6 +50,7 @@ func (c GrantFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (cc GrantCommand) Execute(ctx context.Context) {
 	user, err := NewMongoWorker().GrantPermissions(cc.userName, cc.params)
 	if err != nil {

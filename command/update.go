@@ -7,7 +7,9 @@ import (
 )
 
 type (
-	UpdateFabric  struct{}
+	//UpdateFabric - struct for update fabric
+	UpdateFabric struct{}
+	//UpdateCommand - struct for update command
 	UpdateCommand struct {
 		params []*prot.OneCriteriaStruct
 		res    Responder
@@ -15,21 +17,26 @@ type (
 )
 
 const (
+	//commandUpdate - const for command name
 	commandUpdate = "update"
 )
 
+//init - func for register fabric in parser
 func init() {
 	SharedParser().RegisterFabric(UpdateFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (c UpdateFabric) RequireAdmin() bool {
 	return false
 }
 
+//Require - return array of needed permissions
 func (c UpdateFabric) Require() []string {
 	return []string{commandUpdate}
 }
 
+//TryParse - func for parsing request
 func (c UpdateFabric) TryParse(req RequesterResponder) (Command, error) {
 	var (
 		command UpdateCommand
@@ -42,6 +49,7 @@ func (c UpdateFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (cc UpdateCommand) Execute(ctx context.Context) {
 	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
