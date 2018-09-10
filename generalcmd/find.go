@@ -1,11 +1,10 @@
-package command
+package generalcmd
 
 import (
 	"context"
-	"gamelinkBot/bot"
+	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/prot"
-	"gamelinkBot/rpc"
 	"gamelinkBot/service"
 )
 
@@ -15,7 +14,7 @@ type (
 	//FindCommand - struct for find command
 	FindCommand struct {
 		params []*prot.OneCriteriaStruct
-		res    bot.Responder
+		res    iface.Responder
 	}
 )
 
@@ -40,7 +39,7 @@ func (f FindFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c FindFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
+func (c FindFabric) TryParse(req iface.RequesterResponder) (iface.Command, error) {
 	var (
 		command FindCommand
 		err     error
@@ -54,7 +53,7 @@ func (c FindFabric) TryParse(req bot.RequesterResponder) (parser.Command, error)
 
 //Execute - execute command
 func (fc FindCommand) Execute(ctx context.Context) {
-	r, err := rpc.SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: fc.params})
+	r, err := SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: fc.params})
 	if err != nil {
 		fc.res.Respond(err.Error())
 		return

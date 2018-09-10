@@ -1,11 +1,10 @@
-package command
+package generalcmd
 
 import (
 	"context"
-	"gamelinkBot/bot"
+	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/prot"
-	"gamelinkBot/rpc"
 	"gamelinkBot/service"
 )
 
@@ -15,7 +14,7 @@ type (
 	//UpdateCommand - struct for update command
 	UpdateCommand struct {
 		params []*prot.OneCriteriaStruct
-		res    bot.Responder
+		res    iface.Responder
 	}
 )
 
@@ -40,7 +39,7 @@ func (c UpdateFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c UpdateFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
+func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, error) {
 	var (
 		command UpdateCommand
 		err     error
@@ -54,7 +53,7 @@ func (c UpdateFabric) TryParse(req bot.RequesterResponder) (parser.Command, erro
 
 //Execute - execute command
 func (cc UpdateCommand) Execute(ctx context.Context) {
-	r, err := rpc.SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

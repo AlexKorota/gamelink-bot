@@ -1,11 +1,11 @@
 package main
 
 import (
-	"gamelinkBot/bot"
-	_ "gamelinkBot/command"
+	_ "gamelinkBot/admincmd"
 	"gamelinkBot/config"
+	_ "gamelinkBot/generalcmd"
 	"gamelinkBot/parser"
-	_ "gamelinkBot/permission"
+	"gamelinkBot/telegram"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
@@ -20,7 +20,7 @@ func init() {
 }
 
 func main() {
-	reactor, err := bot.NewBot(config.TBotToken)
+	reactor, err := telegram.NewBot(config.TBotToken)
 	if err != nil {
 		log.Fatal(err)
 	}

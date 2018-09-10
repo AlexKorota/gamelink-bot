@@ -1,4 +1,4 @@
-package rpc
+package generalcmd
 
 import (
 	"gamelinkBot/config"

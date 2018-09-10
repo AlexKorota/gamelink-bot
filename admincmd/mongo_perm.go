@@ -1,4 +1,4 @@
-package permission
+package admincmd
 
 import (
 	"errors"
