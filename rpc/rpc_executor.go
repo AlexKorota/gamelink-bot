@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 	"gamelinkBot/config"
 	"gamelinkBot/generalcmd"
 	"gamelinkBot/iface"
@@ -22,12 +21,11 @@ func init() {
 	generalcmd.SetExecutor(w)
 }
 
-func NewRpcWorker() iface.RpcExecutor {
+func NewRpcWorker() iface.GeneralExecutor {
 	conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
 	}
-	fmt.Println("adddr" + config.DialAddress)
 	client := prot.NewAdminServiceClient(conn)
 	if client == nil { //Но это не точно!
 		log.Fatal("connection error")
