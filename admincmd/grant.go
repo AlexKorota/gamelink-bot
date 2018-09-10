@@ -54,7 +54,7 @@ func (c GrantFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 
 //Execute - execute command
 func (cc GrantCommand) Execute(ctx context.Context) {
-	user, err := NewMongoWorker().GrantPermissions(cc.userName, cc.params)
+	user, err := Executor().GrantPermissions(cc.userName, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

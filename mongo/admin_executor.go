@@ -1,8 +1,10 @@
-package admincmd
+package mongo
 
 import (
 	"errors"
+	"gamelinkBot/admincmd"
 	"gamelinkBot/config"
+	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -15,20 +17,17 @@ type (
 	MongoWorker struct {
 		db *mgo.Session
 	}
-	//AdminRequestStruc - admin data struct from mongoDB
-	AdminRequestStruct struct {
-		Name        string
-		Permissions []string
-	}
 )
 
 //init - add MongoWorker(permChecker) to parser
 func init() {
-	parser.SharedParser().SetChecker(NewMongoWorker())
+	w := NewMongoWorker()
+	parser.SharedParser().SetChecker(w)
+	admincmd.SetExecutor(w)
 }
 
 //NewMongoWorker - set connection to mongoDB
-func NewMongoWorker() *MongoWorker {
+func NewMongoWorker() iface.AdminExecutor {
 	db, err := mgo.Dial(config.MongoAddr)
 	if err != nil {
 		log.Fatal("can't connect to db. Error:", err)
@@ -51,7 +50,7 @@ func (u MongoWorker) IsAdmin(userName string) (bool, error) {
 
 //HasPermissions - check (from mongo) does the user who send command have the necessary permissions
 func (u MongoWorker) HasPermissions(userName string, permissions []string) (bool, error) {
-	user := AdminRequestStruct{}
+	user := iface.AdminRequestStruct{}
 	err := u.db.DB(config.MongoDBName).C("admins").Find(bson.M{"name": userName}).One(&user)
 	if err != nil {
 		if err.Error() == "not found" {
@@ -75,18 +74,18 @@ func (u MongoWorker) HasPermissions(userName string, permissions []string) (bool
 }
 
 //GrantPermissions - update/create permissions entry for user (in MongoDB)
-func (u MongoWorker) GrantPermissions(userName string, permissions []string) (*AdminRequestStruct, error) {
+func (u MongoWorker) GrantPermissions(userName string, permissions []string) (*iface.AdminRequestStruct, error) {
 	selector := bson.M{"name": userName}
 	upsertdata := bson.M{"$addToSet": bson.M{"permissions": bson.M{"$each": permissions}}}
 	_, err := u.db.DB(config.MongoDBName).C("admins").Upsert(selector, upsertdata)
 	if err != nil {
 		return nil, err
 	}
-	return u.FindUser(userName)
+	return u.findUser(userName)
 }
 
 //RevokePermissions - revoke user permissions (delete it from mongo entry)
-func (u MongoWorker) RevokePermissions(userName string, permissions []string) (*AdminRequestStruct, error) {
+func (u MongoWorker) RevokePermissions(userName string, permissions []string) (*iface.AdminRequestStruct, error) {
 	selector := bson.M{"name": userName}
 	revokePermissions := bson.M{"permissions": bson.M{"$in": permissions}}
 	revokedata := bson.M{"$pull": revokePermissions}
@@ -94,12 +93,12 @@ func (u MongoWorker) RevokePermissions(userName string, permissions []string) (*
 	if err != nil {
 		return nil, err
 	}
-	return u.FindUser(userName)
+	return u.findUser(userName)
 }
 
 //FindUser - find user entry in mongo
-func (u MongoWorker) FindUser(userName string) (*AdminRequestStruct, error) {
-	user := AdminRequestStruct{}
+func (u MongoWorker) findUser(userName string) (*iface.AdminRequestStruct, error) {
+	user := iface.AdminRequestStruct{}
 	err := u.db.DB(config.MongoDBName).C("admins").Find(bson.M{"name": userName}).One(&user)
 	if err != nil {
 		if err.Error() == "not found" {
