@@ -53,7 +53,7 @@ func (c DeleteFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 
 //Execute - execute command
 func (cc DeleteCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	r, err := Executor().Delete(ctx, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

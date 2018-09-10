@@ -53,7 +53,7 @@ func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 
 //Execute - execute command
 func (cc CountCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	r, err := Executor().Count(ctx, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

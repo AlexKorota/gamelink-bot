@@ -1,6 +1,9 @@
 package iface
 
-import "context"
+import (
+	"context"
+	"gamelinkBot/prot"
+)
 
 type (
 	//Requester - interface for getting request info
@@ -65,5 +68,12 @@ type (
 	AdminExecutor interface {
 		PermChecker
 		PermissionController
+	}
+
+	RpcExecutor interface {
+		Count(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.CountResponse, error)
+		Delete(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.OneUserResponse, error)
+		Find(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.MultiUserResponse, error)
+		Update(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.MultiUserResponse, error)
 	}
 )

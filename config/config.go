@@ -31,6 +31,10 @@ const (
 	mongoDBName   = "MONGODBNAME"
 )
 
+func init() {
+	LoadEnvironment()
+}
+
 //GetEnvironment - this function returns mode string of the os environment or "development" mode if empty or not defined
 func GetEnvironment() string {
 	var env string
