@@ -50,4 +50,20 @@ type (
 		IsAdmin(userName string) (bool, error)
 		HasPermissions(userName string, permissions []string) (bool, error)
 	}
+
+	//AdminRequestStruc - admin data struct from mongoDB
+	AdminRequestStruct struct {
+		Name        string
+		Permissions []string
+	}
+
+	PermissionController interface {
+		GrantPermissions(userName string, permissions []string) (*AdminRequestStruct, error)
+		RevokePermissions(userName string, permissions []string) (*AdminRequestStruct, error)
+	}
+
+	AdminExecutor interface {
+		PermChecker
+		PermissionController
+	}
 )
