@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"errors"
+	"gamelinkBot/admincmd"
 	"gamelinkBot/config"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
@@ -20,7 +21,9 @@ type (
 
 //init - add MongoWorker(permChecker) to parser
 func init() {
-	parser.SharedParser().SetChecker(NewMongoWorker())
+	w := NewMongoWorker()
+	parser.SharedParser().SetChecker(w)
+	admincmd.SetExecutor(w)
 }
 
 //NewMongoWorker - set connection to mongoDB

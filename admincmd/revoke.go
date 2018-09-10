@@ -3,7 +3,6 @@ package admincmd
 import (
 	"context"
 	"gamelinkBot/iface"
-	"gamelinkBot/mongo"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
 	"strings"
@@ -55,7 +54,7 @@ func (c RevokeFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 
 //Execute - execute command
 func (cc RevokeCommand) Execute(ctx context.Context) {
-	user, err := mongo.NewMongoWorker().RevokePermissions(cc.userName, cc.params)
+	user, err := Executor().RevokePermissions(cc.userName, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return
