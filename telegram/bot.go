@@ -1,50 +1,27 @@
-package bot
+package telegram
 
 import (
 	"context"
+	"gamelinkBot/iface"
 	"github.com/Syfaro/telegram-bot-api"
 	"reflect"
 )
 
 type (
-	//Requester - interface for getting request info
-	Requester interface {
-		Request() string
-		UserName() string
-	}
-	//Responder - interface for respond
-	Responder interface {
-		Respond(message string) error
-	}
-	//Response - interface for getting response info
-	Response interface {
-		Response() string
-		ChatId() int64
-	}
-	//RequesterResponder - interface for RequesterResponder
-	RequesterResponder interface {
-		Requester
-		Responder
-	}
-	//Reactor - interface for react to request
-	Reactor interface {
-		RequesterResponderWithContext(ctx context.Context) (<-chan RequesterResponder, error)
-		Respond(r Response) error
-	}
 	//Bot - struct that contains bot
 	Bot struct {
 		bot *tgbotapi.BotAPI
 	}
 	//RoundTrip - struct for round trip params
 	RoundTrip struct {
-		r                           Reactor
+		r                           iface.Reactor
 		chatId                      int64
 		userName, request, response string
 	}
 )
 
 //NewBot - create new Reactor
-func NewBot(token string) (Reactor, error) {
+func NewBot(token string) (iface.Reactor, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err
@@ -53,12 +30,12 @@ func NewBot(token string) (Reactor, error) {
 }
 
 //RequesterResponderWithContext - listen for updates from bot, then create RoundTrip and path it to channel
-func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan RequesterResponder, error) {
+func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan iface.RequesterResponder, error) {
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
-	rrchan := make(chan RequesterResponder)
-	go func(chanel chan<- RequesterResponder, ctx context.Context) {
+	rrchan := make(chan iface.RequesterResponder)
+	go func(chanel chan<- iface.RequesterResponder, ctx context.Context) {
 		if ctx.Err() != nil {
 			close(rrchan)
 			return
@@ -87,7 +64,7 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan Requeste
 }
 
 //Respond - send msg to bot
-func (b Bot) Respond(r Response) error {
+func (b Bot) Respond(r iface.Response) error {
 	if r.Response() == "" {
 		return nil
 	}

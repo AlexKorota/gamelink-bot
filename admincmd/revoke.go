@@ -1,10 +1,9 @@
-package command
+package admincmd
 
 import (
 	"context"
-	"gamelinkBot/bot"
+	"gamelinkBot/iface"
 	"gamelinkBot/parser"
-	"gamelinkBot/permission"
 	"gamelinkBot/service"
 	"strings"
 )
@@ -16,7 +15,7 @@ type (
 	RevokeCommand struct {
 		userName string
 		params   []string
-		res      bot.Responder
+		res      iface.Responder
 	}
 )
 
@@ -41,7 +40,7 @@ func (c RevokeFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c RevokeFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
+func (c RevokeFabric) TryParse(req iface.RequesterResponder) (iface.Command, error) {
 	var (
 		command RevokeCommand
 		err     error
@@ -55,7 +54,7 @@ func (c RevokeFabric) TryParse(req bot.RequesterResponder) (parser.Command, erro
 
 //Execute - execute command
 func (cc RevokeCommand) Execute(ctx context.Context) {
-	user, err := permission.NewMongoWorker().RevokePermissions(cc.userName, cc.params)
+	user, err := NewMongoWorker().RevokePermissions(cc.userName, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

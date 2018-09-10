@@ -1,11 +1,10 @@
-package command
+package generalcmd
 
 import (
 	"context"
-	"gamelinkBot/bot"
+	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/prot"
-	"gamelinkBot/rpc"
 	"gamelinkBot/service"
 )
 
@@ -15,7 +14,7 @@ type (
 	//DeleteCommand - struct for delete command
 	DeleteCommand struct {
 		params []*prot.OneCriteriaStruct
-		res    bot.Responder
+		res    iface.Responder
 	}
 )
 
@@ -40,7 +39,7 @@ func (c DeleteFabric) Require() []string {
 }
 
 //TryParse - func for parsing request
-func (c DeleteFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
+func (c DeleteFabric) TryParse(req iface.RequesterResponder) (iface.Command, error) {
 	var (
 		command DeleteCommand
 		err     error
@@ -54,7 +53,7 @@ func (c DeleteFabric) TryParse(req bot.RequesterResponder) (parser.Command, erro
 
 //Execute - execute command
 func (cc DeleteCommand) Execute(ctx context.Context) {
-	r, err := rpc.SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return
