@@ -2,35 +2,45 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
 	"gamelinkBot/prot"
+	"gamelinkBot/rpc"
 	"gamelinkBot/service"
 )
 
 type (
-	UpdateFabric  struct{}
+	//UpdateFabric - struct for update fabric
+	UpdateFabric struct{}
+	//UpdateCommand - struct for update command
 	UpdateCommand struct {
 		params []*prot.OneCriteriaStruct
-		res    Responder
+		res    bot.Responder
 	}
 )
 
 const (
+	//commandUpdate - const for command name
 	commandUpdate = "update"
 )
 
+//init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(UpdateFabric{})
+	parser.SharedParser().RegisterFabric(UpdateFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (c UpdateFabric) RequireAdmin() bool {
 	return false
 }
 
+//Require - return array of needed permissions
 func (c UpdateFabric) Require() []string {
 	return []string{commandUpdate}
 }
 
-func (c UpdateFabric) TryParse(req RequesterResponder) (Command, error) {
+//TryParse - func for parsing request
+func (c UpdateFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command UpdateCommand
 		err     error
@@ -42,8 +52,9 @@ func (c UpdateFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (cc UpdateCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	r, err := rpc.SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

@@ -2,36 +2,46 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
+	"gamelinkBot/permission"
 	"gamelinkBot/service"
 	"strings"
 )
 
 type (
-	RevokeFabric  struct{}
+	//RqvokeFabric - struct for Revoke fabric
+	RevokeFabric struct{}
+	//RevokeCommand - struct for revoke command
 	RevokeCommand struct {
 		userName string
 		params   []string
-		res      Responder
+		res      bot.Responder
 	}
 )
 
 const (
+	//commandRevoke - const for revoke command name
 	commandRevoke = "revoke_permissions"
 )
 
+//init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(RevokeFabric{})
+	parser.SharedParser().RegisterFabric(RevokeFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (c RevokeFabric) RequireAdmin() bool {
 	return true
 }
 
+//Require - return array of needed permissions
 func (c RevokeFabric) Require() []string {
 	return []string{commandRevoke}
 }
 
-func (c RevokeFabric) TryParse(req RequesterResponder) (Command, error) {
+//TryParse - func for parsing request
+func (c RevokeFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command RevokeCommand
 		err     error
@@ -43,8 +53,9 @@ func (c RevokeFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (cc RevokeCommand) Execute(ctx context.Context) {
-	user, err := NewMongoWorker().RevokePermissions(cc.userName, cc.params)
+	user, err := permission.NewMongoWorker().RevokePermissions(cc.userName, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

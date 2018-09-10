@@ -2,36 +2,46 @@ package command
 
 import (
 	"context"
+	"gamelinkBot/bot"
+	"gamelinkBot/parser"
+	"gamelinkBot/permission"
 	"gamelinkBot/service"
 	"strings"
 )
 
 type (
-	GrantFabric  struct{}
+	//GrantFabric - struct for Grant fabric
+	GrantFabric struct{}
+	//GrantCommand - struct for grant command
 	GrantCommand struct {
 		userName string
 		params   []string
-		res      Responder
+		res      bot.Responder
 	}
 )
 
 const (
+	//commandGrant - const for command name
 	commandGrant = "grant_permissions"
 )
 
+//init - func for register fabric in parser
 func init() {
-	SharedParser().RegisterFabric(GrantFabric{})
+	parser.SharedParser().RegisterFabric(GrantFabric{})
 }
 
+//RequireAdmin - func for checking if admin permissions required
 func (c GrantFabric) RequireAdmin() bool {
 	return true
 }
 
+//Require - return array of needed permissions
 func (c GrantFabric) Require() []string {
 	return []string{commandGrant}
 }
 
-func (c GrantFabric) TryParse(req RequesterResponder) (Command, error) {
+//TryParse - func for parsing request
+func (c GrantFabric) TryParse(req bot.RequesterResponder) (parser.Command, error) {
 	var (
 		command GrantCommand
 		err     error
@@ -43,8 +53,9 @@ func (c GrantFabric) TryParse(req RequesterResponder) (Command, error) {
 	return command, nil
 }
 
+//Execute - execute command
 func (cc GrantCommand) Execute(ctx context.Context) {
-	user, err := NewMongoWorker().GrantPermissions(cc.userName, cc.params)
+	user, err := permission.NewMongoWorker().GrantPermissions(cc.userName, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

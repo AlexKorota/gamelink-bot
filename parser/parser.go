@@ -1,33 +1,35 @@
-package command
+package parser
 
 import (
 	"context"
 	"errors"
+	"gamelinkBot/bot"
 	"sync"
 )
 
 type (
+	//Command - command interface
 	Command interface {
 		Execute(ctx context.Context)
 	}
-
+	//CommandFabric - command fabric interface
 	CommandFabric interface {
-		TryParse(req RequesterResponder) (Command, error)
+		TryParse(req bot.RequesterResponder) (Command, error)
 		RequireAdmin() bool
 		Require() []string
 	}
-
+	//Parser - parser inerface
 	Parser interface {
 		SetChecker(pc PermChecker)
 		RegisterFabric(cf CommandFabric)
-		TryParse(req RequesterResponder) (Command, error)
+		TryParse(req bot.RequesterResponder) (Command, error)
 	}
-
+	//PermChecker - permission checker interface
 	PermChecker interface {
 		IsAdmin(userName string) (bool, error)
 		HasPermissions(userName string, permissions []string) (bool, error)
 	}
-
+	//CommandParser - struct for command parser
 	CommandParser struct {
 		fabrics []CommandFabric
 		checker PermChecker // проверяет привелегии
@@ -39,6 +41,7 @@ var (
 	parserOnce sync.Once
 )
 
+//SharedParser - singleton for parser
 func SharedParser() Parser {
 	parserOnce.Do(func() {
 		parser = &CommandParser{}
@@ -46,21 +49,24 @@ func SharedParser() Parser {
 	return parser
 }
 
+//SetChecker - add permission checker to command parser
 func (p *CommandParser) SetChecker(pc PermChecker) {
 	if p != nil {
 		p.checker = pc
 	}
 }
 
+//RegisterFabric - append fabric to command parser fabrics array
 func (p *CommandParser) RegisterFabric(cf CommandFabric) {
 	if p != nil {
 		p.fabrics = append(p.fabrics, cf)
 	}
 }
 
-func (p CommandParser) TryParse(req RequesterResponder) (Command, error) {
+//TryParse - tries to parse the request in a loop using array factories
+func (p CommandParser) TryParse(req bot.RequesterResponder) (Command, error) {
 	if p.checker == nil {
-		return nil, errors.New("permission checked is not defined")
+		return nil, errors.New("permission checker is not defined")
 	}
 	adm, err := p.checker.IsAdmin(req.UserName())
 	if err != nil {

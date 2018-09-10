@@ -1,4 +1,4 @@
-package command
+package rpc
 
 import (
 	"gamelinkBot/config"
@@ -13,6 +13,7 @@ var (
 	rpcOnce sync.Once
 )
 
+//SharedClient - make grpc connection and client
 func SharedClient() prot.AdminServiceClient {
 	rpcOnce.Do(func() {
 		conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
