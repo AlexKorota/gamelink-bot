@@ -10,6 +10,7 @@ import (
 	"gamelinkBot/telegram"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"os"
 )
 
 func init() {
@@ -22,6 +23,8 @@ func init() {
 }
 
 func main() {
+	l, err := os.OpenFile(config.LogFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	log.SetOutput(l)
 	reactor, err := telegram.NewBot(config.TBotToken)
 	if err != nil {
 		log.Fatal(err)
@@ -32,6 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 	for req := range requests {
+		log.Info("user: " + req.UserName() + " command: " + req.Request())
 		cmd, err := parser.SharedParser().TryParse(req)
 		if err != nil {
 			req.Respond(err.Error())

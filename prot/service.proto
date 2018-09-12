@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package prot;
+
+import "prot/msg.proto";
+
+service AdminService {
+    rpc Count(MultiCriteriaRequest) returns(CountResponse) {}
+    rpc Find(MultiCriteriaRequest) returns(MultiUserResponse) {}
+    rpc Update(MultiCriteriaRequest) returns(MultiUserResponse) {}
+    rpc Delete(MultiCriteriaRequest) returns(OneUserResponse) {}
+}
