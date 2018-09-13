@@ -76,7 +76,6 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan iface.Re
 
 //Respond - send msg to bot
 func (b Bot) Respond(r iface.Response) error {
-	log.Debug("telegram.Bot.Respond call")
 	if r.Response() == "" {
 		return nil
 	}
@@ -87,25 +86,21 @@ func (b Bot) Respond(r iface.Response) error {
 
 //Request - return request string
 func (rt RoundTrip) Request() string {
-	log.Debug("telegram.RoundTrip.Request call")
 	return rt.request
 }
 
 //UserName - return user name who send msg to bot
 func (rt RoundTrip) UserName() string {
-	log.Debug("telegram.RoundTrip.UserName call")
 	return rt.userName
 }
 
 //ChatId - return chat id
 func (rt RoundTrip) ChatId() int64 {
-	log.Debug("telegram.RoundTrip.ChatId call")
 	return rt.chatId
 }
 
 //Response - return response string
 func (rt RoundTrip) Response() string {
-	log.Debug("telegram.RoundTrip.Response call")
 	return rt.response
 }
 

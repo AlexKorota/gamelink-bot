@@ -51,6 +51,9 @@ func (c RevokeFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		err     error
 	)
 	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+commandRevoke); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req

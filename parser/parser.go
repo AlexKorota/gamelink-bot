@@ -59,7 +59,7 @@ func (p CommandParser) TryParse(req iface.RequesterResponder) (iface.Command, er
 	log.WithFields(log.Fields{"user": req.UserName(), "result": adm}).Debug("admin check")
 	for _, v := range p.fabrics {
 		if v.RequireAdmin() && !adm {
-			return nil, errors.New("permission denied")
+			continue
 		}
 		log.WithField("name", v.CommandName()).Debug("trying to parse command")
 		cmd, err := v.TryParse(req)

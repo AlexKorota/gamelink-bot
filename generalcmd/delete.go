@@ -19,7 +19,7 @@ type (
 
 const (
 	//commandDelete - const for command
-	commandDelete = "count"
+	commandDelete = "delete"
 )
 
 //init - func for register fabric in parser
@@ -49,6 +49,9 @@ func (c DeleteFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		err     error
 	)
 	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandDelete); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req

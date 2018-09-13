@@ -9,10 +9,14 @@ import (
 	"strings"
 )
 
-var ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp *regexp.Regexp
-var err error
+var (
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp *regexp.Regexp
+	UnknownCommandError                                                             error
+)
 
 func init() {
+	var err error
+	UnknownCommandError = errors.New("Unknown command")
 	ageRegexp, err = regexp.Compile("(((age)\\s*(=\\s*([0-9]{1,2}$)|\\[\\s*((([0-9]{1,2})))\\s*;\\s*((([0-9]{1,2})))\\s*\\]$)))")
 	if err != nil {
 		log.Fatal(err)
@@ -106,7 +110,7 @@ func appendToMultiCriteria(multiCriteria *[]*iface.OneCriteriaStruct, matches []
 func CompareParseCommand(str, cmd string) ([]*iface.OneCriteriaStruct, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return nil, errors.New("wrong command")
+		return nil, UnknownCommandError
 	}
 	params := strings.Split(str[ind+1:], " ")
 	return ParseRequest(params)
@@ -115,7 +119,7 @@ func CompareParseCommand(str, cmd string) ([]*iface.OneCriteriaStruct, error) {
 func CompareParsePermissionCommand(str, cmd string) (string, []string, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return "", nil, errors.New("wrong permission command")
+		return "", nil, UnknownCommandError
 	}
 	return ParsePermissionRequest(str[ind+1:])
 }

@@ -49,6 +49,9 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		err     error
 	)
 	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandUpdate); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req

@@ -6,9 +6,9 @@ import (
 	"gamelinkBot/config"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"log"
 	"strings"
 )
 
@@ -50,6 +50,7 @@ func (u MongoWorker) IsAdmin(userName string) (bool, error) {
 
 //HasPermissions - check (from mongo) does the user who send command have the necessary permissions
 func (u MongoWorker) HasPermissions(userName string, permissions []string) (bool, error) {
+	log.WithFields(log.Fields{"userName": userName, "permissions": permissions}).Debug("mongo.HasPermissions call")
 	user := iface.AdminRequestStruct{}
 	err := u.db.DB(config.MongoDBName).C("admins").Find(bson.M{"name": userName}).One(&user)
 	if err != nil {
@@ -58,6 +59,7 @@ func (u MongoWorker) HasPermissions(userName string, permissions []string) (bool
 		}
 		return false, err
 	}
+	log.WithField("permissions", user.Permissions).Debug("user")
 	for _, cmdp := range permissions {
 		successOne := false
 		for _, up := range user.Permissions {

@@ -51,6 +51,9 @@ func (c GrantFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 		err     error
 	)
 	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+commandGrant); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req
