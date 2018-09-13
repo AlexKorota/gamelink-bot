@@ -4,6 +4,7 @@ import (
 	"context"
 	"gamelinkBot/iface"
 	"github.com/Syfaro/telegram-bot-api"
+	log "github.com/sirupsen/logrus"
 	"reflect"
 )
 
@@ -22,8 +23,10 @@ type (
 
 //NewBot - create new Reactor
 func NewBot(token string) (iface.Reactor, error) {
+	log.WithField("token", token).Debug("telegram.NewBot call")
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
+		log.Debug("error creating telegram bot api object")
 		return nil, err
 	}
 	return &Bot{bot}, nil
@@ -31,11 +34,14 @@ func NewBot(token string) (iface.Reactor, error) {
 
 //RequesterResponderWithContext - listen for updates from bot, then create RoundTrip and path it to channel
 func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan iface.RequesterResponder, error) {
+	log.Debug("telegram.Bot.RequesterResponderWithContext call")
 	if ctx.Err() != nil {
+		log.Debug("context is closed already")
 		return nil, ctx.Err()
 	}
 	rrchan := make(chan iface.RequesterResponder)
 	go func(chanel chan<- iface.RequesterResponder, ctx context.Context) {
+		log.Debug("telegram.Bot.RequesterResponderWithContext.goroutine call")
 		if ctx.Err() != nil {
 			close(rrchan)
 			return
@@ -44,21 +50,26 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan iface.Re
 		config.Timeout = 60
 		updates, err := b.bot.GetUpdatesChan(config)
 		if err != nil {
+			log.Error("error getting update chan from telegram api obtained")
 			close(rrchan)
 			return
 		}
+		log.Debug("chan for getting original updates from telegram api obtained")
 		for {
 			select {
 			case update := <-updates:
+				log.Debug("new update arrived")
 				if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
 					chanel <- &RoundTrip{b, update.Message.Chat.ID,
 						update.Message.From.UserName, update.Message.Text, ""}
 				}
 			case <-ctx.Done():
+				log.Debug("context was closed")
 				close(rrchan)
 				return
 			}
 		}
+		log.Debug("exiting telegram.Bot.RequesterResponderWithContext.goroutine")
 	}(rrchan, ctx)
 	return rrchan, nil
 }
@@ -94,6 +105,7 @@ func (rt RoundTrip) Response() string {
 }
 
 func (rt RoundTrip) Respond(message string) error {
+	log.WithField("message", message).Debug("telegram.RoundTrip.Respond call")
 	rt.response = message
 	return rt.r.Respond(rt)
 }

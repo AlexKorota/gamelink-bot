@@ -2,7 +2,6 @@ package iface
 
 import (
 	"context"
-	"gamelinkBot/prot"
 )
 
 type (
@@ -41,6 +40,7 @@ type (
 		TryParse(req RequesterResponder) (Command, error) //Try to parse request, return command if parse is success
 		RequireAdmin() bool                               //Return true if command need admin permissions
 		Require() []string                                //Array of needed permissions for this command
+		CommandName() string                              //Returns human readable command name
 	}
 	//Parser - parser interface
 	Parser interface {
@@ -71,9 +71,9 @@ type (
 	}
 	//GeneralExecutor - interface for executing general commands
 	GeneralExecutor interface {
-		Count(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.CountResponse, error)
-		Delete(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.OneUserResponse, error)
-		Find(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.MultiUserResponse, error)
-		Update(ctx context.Context, params []*prot.OneCriteriaStruct) (*prot.MultiUserResponse, error)
+		Count(ctx context.Context, params []*OneCriteriaStruct) (*CountResponse, error)
+		Delete(ctx context.Context, params []*OneCriteriaStruct) (*OneUserResponse, error)
+		Find(ctx context.Context, params []*OneCriteriaStruct) (*MultiUserResponse, error)
+		Update(ctx context.Context, params []*OneCriteriaStruct) (*MultiUserResponse, error)
 	}
 )

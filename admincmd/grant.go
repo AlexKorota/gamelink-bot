@@ -29,6 +29,11 @@ func init() {
 	parser.SharedParser().RegisterFabric(GrantFabric{})
 }
 
+//CommandName - return human readable command name
+func (c GrantFabric) CommandName() string {
+	return commandGrant
+}
+
 //RequireAdmin - func for checking if admin permissions required
 func (c GrantFabric) RequireAdmin() bool {
 	return true
@@ -46,6 +51,9 @@ func (c GrantFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 		err     error
 	)
 	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+commandGrant); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req

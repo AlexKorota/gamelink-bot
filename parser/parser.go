@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"gamelinkBot/iface"
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -22,6 +23,7 @@ var (
 
 //SharedParser - singleton for parser
 func SharedParser() iface.Parser {
+	log.Debug("parser.SharedParser")
 	parserOnce.Do(func() {
 		parser = &CommandParser{}
 	})
@@ -30,6 +32,7 @@ func SharedParser() iface.Parser {
 
 //SetChecker - add permission checker to command parser
 func (p *CommandParser) SetChecker(pc iface.PermChecker) {
+	log.Debug("parser.CommandParser.SetChecker")
 	if p != nil {
 		p.checker = pc
 	}
@@ -37,6 +40,7 @@ func (p *CommandParser) SetChecker(pc iface.PermChecker) {
 
 //RegisterFabric - append fabric to command parser fabrics array
 func (p *CommandParser) RegisterFabric(cf iface.CommandFabric) {
+	log.Debug("parser.CommandParser.RegisterFabric")
 	if p != nil {
 		p.fabrics = append(p.fabrics, cf)
 	}
@@ -44,6 +48,7 @@ func (p *CommandParser) RegisterFabric(cf iface.CommandFabric) {
 
 //TryParse - tries to parse the request in a loop using array factories
 func (p CommandParser) TryParse(req iface.RequesterResponder) (iface.Command, error) {
+	log.Debug("parser.CommandParser.TryParse")
 	if p.checker == nil {
 		return nil, errors.New("permission checker is not defined")
 	}
@@ -51,14 +56,15 @@ func (p CommandParser) TryParse(req iface.RequesterResponder) (iface.Command, er
 	if err != nil {
 		return nil, err
 	}
+	log.WithFields(log.Fields{"user": req.UserName(), "result": adm}).Debug("admin check")
 	for _, v := range p.fabrics {
 		if v.RequireAdmin() && !adm {
-			return nil, errors.New("permission denied")
+			continue
 		}
+		log.WithField("name", v.CommandName()).Debug("trying to parse command")
 		cmd, err := v.TryParse(req)
 		if err != nil {
-			continue
-			//return nil, err // А зачем нам тут ретурн?
+			return nil, err
 		}
 		if cmd != nil {
 			if adm {

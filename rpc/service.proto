@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package rpc;
+
+option go_package = "gamelinkBot/rpc";
+
+import "iface/cmd_call.proto";
+
+service AdminService {
+    rpc Count(iface.MultiCriteriaRequest) returns(iface.CountResponse) {}
+    rpc Find(iface.MultiCriteriaRequest) returns(iface.MultiUserResponse) {}
+    rpc Update(iface.MultiCriteriaRequest) returns(iface.MultiUserResponse) {}
+    rpc Delete(iface.MultiCriteriaRequest) returns(iface.OneUserResponse) {}
+}

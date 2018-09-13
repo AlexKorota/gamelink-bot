@@ -4,7 +4,6 @@ import (
 	"context"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
-	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
 
@@ -13,7 +12,7 @@ type (
 	FindFabric struct{}
 	//FindCommand - struct for find command
 	FindCommand struct {
-		params []*prot.OneCriteriaStruct
+		params []*iface.OneCriteriaStruct
 		res    iface.Responder
 	}
 )
@@ -26,6 +25,11 @@ const (
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(FindFabric{})
+}
+
+//CommandName - return human readable command name
+func (c FindFabric) CommandName() string {
+	return commandFind
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -45,6 +49,9 @@ func (c FindFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 		err     error
 	)
 	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandFind); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req

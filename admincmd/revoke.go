@@ -29,6 +29,11 @@ func init() {
 	parser.SharedParser().RegisterFabric(RevokeFabric{})
 }
 
+//CommandName - return human readable command name
+func (c RevokeFabric) CommandName() string {
+	return commandRevoke
+}
+
 //RequireAdmin - func for checking if admin permissions required
 func (c RevokeFabric) RequireAdmin() bool {
 	return true
@@ -46,6 +51,9 @@ func (c RevokeFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		err     error
 	)
 	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+commandRevoke); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req

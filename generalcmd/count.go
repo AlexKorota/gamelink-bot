@@ -4,7 +4,6 @@ import (
 	"context"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
-	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
 
@@ -13,7 +12,7 @@ type (
 	CountFabric struct{}
 	//CountCommand - struct for count command
 	CountCommand struct {
-		params []*prot.OneCriteriaStruct
+		params []*iface.OneCriteriaStruct
 		res    iface.Responder
 	}
 )
@@ -38,6 +37,11 @@ func (c CountFabric) Require() []string {
 	return []string{commandCount}
 }
 
+//CommandName - return human readable command name
+func (c CountFabric) CommandName() string {
+	return commandCount
+}
+
 //TryParse - func for parsing request
 func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, error) {
 	var (
@@ -45,6 +49,9 @@ func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 		err     error
 	)
 	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandCount); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
 		return nil, err
 	}
 	command.res = req
