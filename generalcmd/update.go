@@ -53,7 +53,7 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 
 //Execute - execute command
 func (cc UpdateCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Count(ctx, &prot.MultiCriteriaRequest{Params: cc.params})
+	r, err := Executor().Update(ctx, cc.params)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

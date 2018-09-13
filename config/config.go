@@ -19,6 +19,8 @@ var (
 	MongoAddr string
 	//mongoDBName
 	MongoDBName string
+	//LogFile - name of log file
+	LogFile string
 )
 
 const (
@@ -29,7 +31,12 @@ const (
 	superAdmin    = "SADMIN"
 	mongoAddr     = "MONGOADDR"
 	mongoDBName   = "MONGODBNAME"
+	logFile       = "LOGFILE"
 )
+
+func init() {
+	LoadEnvironment()
+}
 
 //GetEnvironment - this function returns mode string of the os environment or "development" mode if empty or not defined
 func GetEnvironment() string {
@@ -73,5 +80,9 @@ func LoadEnvironment() {
 	MongoDBName = os.Getenv(mongoDBName)
 	if MongoAddr == "" {
 		log.Fatal("mongo DB name must be set")
+	}
+	LogFile = os.Getenv(logFile)
+	if LogFile == "" {
+		log.Fatal("log filename must be set")
 	}
 }

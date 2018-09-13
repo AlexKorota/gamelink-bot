@@ -55,10 +55,3 @@ message MultiUserResponse {
 message CountResponse {
     int64 count = 1;
 }
-
-service AdminService {
-    rpc Count(MultiCriteriaRequest) returns(CountResponse) {}
-    rpc Find(MultiCriteriaRequest) returns(MultiUserResponse) {}
-    rpc Update(MultiCriteriaRequest) returns(MultiUserResponse) {}
-    rpc Delete(MultiCriteriaRequest) returns(OneUserResponse) {}
-}

@@ -53,7 +53,7 @@ func (c FindFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 
 //Execute - execute command
 func (fc FindCommand) Execute(ctx context.Context) {
-	r, err := SharedClient().Find(ctx, &prot.MultiCriteriaRequest{Params: fc.params})
+	r, err := Executor().Find(ctx, fc.params)
 	if err != nil {
 		fc.res.Respond(err.Error())
 		return
