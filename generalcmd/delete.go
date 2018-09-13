@@ -4,7 +4,6 @@ import (
 	"context"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
-	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
 
@@ -13,7 +12,7 @@ type (
 	DeleteFabric struct{}
 	//DeleteCommand - struct for delete command
 	DeleteCommand struct {
-		params []*prot.OneCriteriaStruct
+		params []*iface.OneCriteriaStruct
 		res    iface.Responder
 	}
 )
@@ -26,6 +25,11 @@ const (
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(DeleteFabric{})
+}
+
+//CommandName - return human readable command name
+func (c DeleteFabric) CommandName() string {
+	return commandDelete
 }
 
 //RequireAdmin - func for checking if admin permissions required

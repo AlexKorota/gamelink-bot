@@ -4,7 +4,6 @@ import (
 	"context"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
-	"gamelinkBot/prot"
 	"gamelinkBot/service"
 )
 
@@ -13,7 +12,7 @@ type (
 	CountFabric struct{}
 	//CountCommand - struct for count command
 	CountCommand struct {
-		params []*prot.OneCriteriaStruct
+		params []*iface.OneCriteriaStruct
 		res    iface.Responder
 	}
 )
@@ -36,6 +35,11 @@ func (c CountFabric) RequireAdmin() bool {
 //Require - return array of needed permissions
 func (c CountFabric) Require() []string {
 	return []string{commandCount}
+}
+
+//CommandName - return human readable command name
+func (c CountFabric) CommandName() string {
+	return commandCount
 }
 
 //TryParse - func for parsing request

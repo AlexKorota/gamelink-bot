@@ -29,6 +29,11 @@ func init() {
 	parser.SharedParser().RegisterFabric(GrantFabric{})
 }
 
+//CommandName - return human readable command name
+func (c GrantFabric) CommandName() string {
+	return commandGrant
+}
+
 //RequireAdmin - func for checking if admin permissions required
 func (c GrantFabric) RequireAdmin() bool {
 	return true
