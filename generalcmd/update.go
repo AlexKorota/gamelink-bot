@@ -2,6 +2,7 @@ package generalcmd
 
 import (
 	"context"
+	msg "gamelink-go/protoMsg"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -12,7 +13,7 @@ type (
 	UpdateFabric struct{}
 	//UpdateCommand - struct for update command
 	UpdateCommand struct {
-		params []*iface.OneCriteriaStruct
+		params []*msg.OneCriteriaStruct
 		res    iface.Responder
 	}
 )

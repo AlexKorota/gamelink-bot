@@ -2,6 +2,7 @@ package generalcmd
 
 import (
 	"context"
+	msg "gamelink-go/protoMsg"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -12,7 +13,7 @@ type (
 	FindFabric struct{}
 	//FindCommand - struct for find command
 	FindCommand struct {
-		params []*iface.OneCriteriaStruct
+		params []*msg.OneCriteriaStruct
 		res    iface.Responder
 	}
 )

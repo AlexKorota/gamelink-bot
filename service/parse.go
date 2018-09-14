@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"gamelinkBot/iface"
+	msg "gamelink-go/protoMsg"
 	"log"
 	"regexp"
 	"strings"
@@ -43,8 +43,8 @@ func init() {
 	}
 }
 
-func ParseRequest(params []string) ([]*iface.OneCriteriaStruct, error) {
-	var multiCriteria []*iface.OneCriteriaStruct
+func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, error) {
+	var multiCriteria []*msg.OneCriteriaStruct
 	for _, v := range params {
 		var matches []string
 		if v == "" {
@@ -80,34 +80,34 @@ func ParseRequest(params []string) ([]*iface.OneCriteriaStruct, error) {
 	return multiCriteria, nil
 }
 
-func appendToMultiCriteria(multiCriteria *[]*iface.OneCriteriaStruct, matches []string) {
-	var criteria, secondCriteria iface.OneCriteriaStruct
+func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []string) {
+	var criteria, secondCriteria msg.OneCriteriaStruct
 	if matches[3] != "" {
-		if val, ok := iface.OneCriteriaStruct_Criteria_value[matches[3]]; ok {
-			criteria.Cr = iface.OneCriteriaStruct_Criteria(val)
-			secondCriteria.Cr = iface.OneCriteriaStruct_Criteria(val)
+		if val, ok := msg.OneCriteriaStruct_Criteria_value[matches[3]]; ok {
+			criteria.Cr = msg.OneCriteriaStruct_Criteria(val)
+			secondCriteria.Cr = msg.OneCriteriaStruct_Criteria(val)
 		} else {
 			// Стоит ли тут добавить обработку ошибки на случай, если критерий не нашелся в енуме?
 		}
 	}
 	if matches[5] != "" {
-		criteria.Op = iface.OneCriteriaStruct_e
+		criteria.Op = msg.OneCriteriaStruct_e
 		criteria.Value = matches[5]
 		*multiCriteria = append(*multiCriteria, &criteria)
 	} else if matches[8] != "" && matches[11] != "" {
-		criteria.Op = iface.OneCriteriaStruct_l
+		criteria.Op = msg.OneCriteriaStruct_l
 		criteria.Value = matches[11]
 
 		*multiCriteria = append(*multiCriteria, &criteria)
 
-		secondCriteria.Op = iface.OneCriteriaStruct_g
+		secondCriteria.Op = msg.OneCriteriaStruct_g
 		secondCriteria.Value = matches[8]
 
 		*multiCriteria = append(*multiCriteria, &secondCriteria)
 	}
 }
 
-func CompareParseCommand(str, cmd string) ([]*iface.OneCriteriaStruct, error) {
+func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
 		return nil, UnknownCommandError

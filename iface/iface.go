@@ -2,6 +2,7 @@ package iface
 
 import (
 	"context"
+	msg "gamelink-go/protoMsg"
 )
 
 type (
@@ -71,9 +72,9 @@ type (
 	}
 	//GeneralExecutor - interface for executing general commands
 	GeneralExecutor interface {
-		Count(ctx context.Context, params []*OneCriteriaStruct) (*CountResponse, error)
-		Delete(ctx context.Context, params []*OneCriteriaStruct) (*OneUserResponse, error)
-		Find(ctx context.Context, params []*OneCriteriaStruct) (*MultiUserResponse, error)
-		Update(ctx context.Context, params []*OneCriteriaStruct) (*MultiUserResponse, error)
+		Count(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.CountResponse, error)
+		Delete(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.OneUserResponse, error)
+		Find(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error)
+		Update(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error)
 	}
 )
