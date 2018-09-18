@@ -2,7 +2,7 @@ package iface
 
 import (
 	"context"
-	msg "gamelink-go/protoMsg"
+	msg "gamelink-go/proto_msg"
 )
 
 type (
@@ -76,5 +76,6 @@ type (
 		Delete(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.OneUserResponse, error)
 		Find(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error)
 		Update(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error)
+		SendPush(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.StringResponse, error)
 	}
 )

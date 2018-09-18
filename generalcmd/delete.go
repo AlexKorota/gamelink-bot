@@ -2,7 +2,7 @@ package generalcmd
 
 import (
 	"context"
-	msg "gamelink-go/protoMsg"
+	msg "gamelink-go/proto_msg"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"

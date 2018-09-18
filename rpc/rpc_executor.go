@@ -2,8 +2,8 @@ package rpc
 
 import (
 	"context"
-	msg "gamelink-go/protoMsg"
-	service "gamelink-go/protoService"
+	msg "gamelink-go/proto_msg"
+	service "gamelink-go/proto_service"
 	"gamelinkBot/config"
 	"gamelinkBot/generalcmd"
 	"gamelinkBot/iface"
@@ -60,6 +60,14 @@ func (r RpcWorker) Find(ctx context.Context, params []*msg.OneCriteriaStruct) (*
 
 func (r RpcWorker) Update(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error) {
 	data, err := r.client.Update(ctx, &msg.MultiCriteriaRequest{Params: params})
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (r RpcWorker) SendPush(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.StringResponse, error) {
+	data, err := r.client.SendPush(ctx, &msg.MultiCriteriaRequest{Params: params})
 	if err != nil {
 		return nil, err
 	}

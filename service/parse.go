@@ -3,15 +3,15 @@ package service
 import (
 	"errors"
 	"fmt"
-	msg "gamelink-go/protoMsg"
+	msg "gamelink-go/proto_msg"
 	"log"
 	"regexp"
 	"strings"
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp *regexp.Regexp
-	UnknownCommandError                                                             error
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp *regexp.Regexp
+	UnknownCommandError                                                                         error
 )
 
 func init() {
@@ -38,6 +38,10 @@ func init() {
 		log.Fatal(err)
 	}
 	permissionRegexp, err = regexp.Compile("(\\w+)\\s*(\\[((\\s*(count|find|delete|send_push|update|get_user)\\s*;)*\\s*(count|find|delete|send_push|update|get_user))\\s*])?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	pushRegexp, err = regexp.Compile("(\\w+)\\s*(\\[((\\s*(count|find|delete|send_push|update|get_user)\\s*;)*\\s*(count|find|delete|send_push|update|get_user))\\s*])?")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,6 +75,11 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, error) {
 			continue
 		}
 		matches = registrationRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
+			continue
+		}
+		matches = pushRegexp.FindStringSubmatch(v)
 		if matches != nil {
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue

@@ -2,7 +2,6 @@ package generalcmd
 
 import (
 	"context"
-	"fmt"
 	msg "gamelink-go/proto_msg"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
@@ -10,44 +9,43 @@ import (
 )
 
 type (
-	//CountFabic - struct for Count fabric
-	CountFabric struct{}
-	//CountCommand - struct for count command
-	CountCommand struct {
+	//SendFabric - struct for send struct
+	SendFabric struct{}
+	//SendCommand - struct for send command
+	SendCommand struct {
 		params []*msg.OneCriteriaStruct
 		res    iface.Responder
 	}
 )
 
 const (
-	//commandCount - const for command name
-	commandCount = "count"
+	sendPushCommand = "send_push"
 )
 
 //init - func for register fabric in parser
 func init() {
-	parser.SharedParser().RegisterFabric(CountFabric{})
+	parser.SharedParser().RegisterFabric(SendFabric{})
 }
 
 //RequireAdmin - func for checking if admin permissions required
-func (c CountFabric) RequireAdmin() bool {
+func (c SendFabric) RequireAdmin() bool {
 	return false
 }
 
 //Require - return array of needed permissions
-func (c CountFabric) Require() []string {
-	return []string{commandCount}
+func (c SendFabric) Require() []string {
+	return []string{sendPushCommand}
 }
 
 //CommandName - return human readable command name
-func (c CountFabric) CommandName() string {
+func (c SendFabric) CommandName() string {
 	return commandCount
 }
 
 //TryParse - func for parsing request
-func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, error) {
+func (c SendFabric) TryParse(req iface.RequesterResponder) (iface.Command, error) {
 	var (
-		command CountCommand
+		command SendCommand
 		err     error
 	)
 	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandCount); err != nil {
@@ -61,11 +59,11 @@ func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 }
 
 //Execute - execute command
-func (cc CountCommand) Execute(ctx context.Context) {
-	r, err := Executor().Count(ctx, cc.params)
+func (sc SendCommand) Execute(ctx context.Context) {
+	r, err := Executor().SendPush(ctx, sc.params)
 	if err != nil {
-		cc.res.Respond(err.Error())
+		sc.res.Respond(err.Error())
 		return
 	}
-	cc.res.Respond(fmt.Sprintf("%d", r.Count))
+	sc.res.Respond(r.String())
 }
