@@ -41,7 +41,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	pushRegexp, err = regexp.Compile("(\\w+)\\s*(\\[((\\s*(count|find|delete|send_push|update|get_user)\\s*;)*\\s*(count|find|delete|send_push|update|get_user))\\s*])?")
+	pushRegexp, err = regexp.Compile("(((message)))\\s*=\\s*((.+))")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -91,6 +91,7 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, error) {
 
 func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []string) {
 	var criteria, secondCriteria msg.OneCriteriaStruct
+	fmt.Println(matches)
 	if matches[3] != "" {
 		if val, ok := msg.OneCriteriaStruct_Criteria_value[matches[3]]; ok {
 			criteria.Cr = msg.OneCriteriaStruct_Criteria(val)

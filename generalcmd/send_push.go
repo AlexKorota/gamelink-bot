@@ -39,7 +39,7 @@ func (c SendFabric) Require() []string {
 
 //CommandName - return human readable command name
 func (c SendFabric) CommandName() string {
-	return commandCount
+	return sendPushCommand
 }
 
 //TryParse - func for parsing request
@@ -48,7 +48,7 @@ func (c SendFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 		command SendCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandCount); err != nil {
+	if command.params, err = service.CompareParseCommand(req.Request(), "/"+sendPushCommand); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
