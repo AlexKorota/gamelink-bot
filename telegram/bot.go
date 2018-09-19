@@ -79,7 +79,9 @@ func (b Bot) Respond(r iface.Response) error {
 	if r.Response() == "" {
 		return nil
 	}
-	_, err := b.bot.Send(tgbotapi.NewMessage(r.ChatId(), r.Response()))
+	msg := tgbotapi.NewMessage(r.ChatId(), r.Response())
+	msg.ParseMode = "HTML"
+	_, err := b.bot.Send(msg)
 	return err
 
 }

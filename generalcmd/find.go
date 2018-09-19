@@ -1,11 +1,13 @@
 package generalcmd
 
 import (
+	"bytes"
 	"context"
 	msg "gamelink-go/proto_msg"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
+	"html/template"
 )
 
 type (
@@ -66,5 +68,16 @@ func (fc FindCommand) Execute(ctx context.Context) {
 		fc.res.Respond(err.Error())
 		return
 	}
-	fc.res.Respond(r.String())
+	t, err := template.New("user.html").ParseFiles("generalcmd/template/user.html")
+	if err != nil {
+		fc.res.Respond(err.Error())
+		return
+	}
+	buf := new(bytes.Buffer)
+	err = t.Execute(buf, r)
+	if err != nil {
+		fc.res.Respond(err.Error())
+		return
+	}
+	fc.res.Respond(buf.String())
 }
