@@ -58,10 +58,12 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan iface.Re
 		for {
 			select {
 			case update := <-updates:
-				log.Debug("new update arrived")
-				if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
-					chanel <- &RoundTrip{b, update.Message.Chat.ID,
-						update.Message.From.UserName, update.Message.Text, ""}
+				if update.Message != nil {
+					log.Debug("new update arrived")
+					if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
+						chanel <- &RoundTrip{b, update.Message.Chat.ID,
+							update.Message.From.UserName, update.Message.Text, ""}
+					}
 				}
 			case <-ctx.Done():
 				log.Debug("context was closed")
