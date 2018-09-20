@@ -122,7 +122,14 @@ func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, error) {
 	if ind < 0 || str[:ind] != cmd {
 		return nil, UnknownCommandError
 	}
-	params := strings.Split(str[ind+1:], " ")
+	messageInd := strings.Index(str, "message")
+	var params []string
+	if messageInd < 0 {
+		params = strings.Split(str[ind+1:], " ")
+	} else {
+		params = strings.Split(str[ind+1:messageInd], " ")
+	}
+
 	return ParseRequest(params)
 }
 
