@@ -68,11 +68,7 @@ func (fc FindCommand) Execute(ctx context.Context) {
 		fc.res.Respond(err.Error())
 		return
 	}
-	t, err := template.New("user.html").ParseFiles("generalcmd/template/user.html")
-	if err != nil {
-		fc.res.Respond(err.Error())
-		return
-	}
+	t := template.Must(template.New("user.html").ParseFiles("generalcmd/template/user.html"))
 	buf := new(bytes.Buffer)
 	err = t.Execute(buf, r)
 	if err != nil {
