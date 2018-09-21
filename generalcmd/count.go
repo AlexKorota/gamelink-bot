@@ -2,6 +2,8 @@ package generalcmd
 
 import (
 	"context"
+	"fmt"
+	msg "gamelink-go/proto_msg"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -12,7 +14,7 @@ type (
 	CountFabric struct{}
 	//CountCommand - struct for count command
 	CountCommand struct {
-		params []*iface.OneCriteriaStruct
+		params []*msg.OneCriteriaStruct
 		res    iface.Responder
 	}
 )
@@ -65,5 +67,5 @@ func (cc CountCommand) Execute(ctx context.Context) {
 		cc.res.Respond(err.Error())
 		return
 	}
-	cc.res.Respond(r.String())
+	cc.res.Respond(fmt.Sprintf("%d", r.Count))
 }

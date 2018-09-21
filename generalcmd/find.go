@@ -1,10 +1,13 @@
 package generalcmd
 
 import (
+	"bytes"
 	"context"
+	msg "gamelink-go/proto_msg"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
+	"html/template"
 )
 
 type (
@@ -12,7 +15,7 @@ type (
 	FindFabric struct{}
 	//FindCommand - struct for find command
 	FindCommand struct {
-		params []*iface.OneCriteriaStruct
+		params []*msg.OneCriteriaStruct
 		res    iface.Responder
 	}
 )
@@ -65,5 +68,12 @@ func (fc FindCommand) Execute(ctx context.Context) {
 		fc.res.Respond(err.Error())
 		return
 	}
-	fc.res.Respond(r.String())
+	t := template.Must(template.New("user.html").ParseFiles("generalcmd/template/user.html"))
+	buf := new(bytes.Buffer)
+	err = t.Execute(buf, r)
+	if err != nil {
+		fc.res.Respond(err.Error())
+		return
+	}
+	fc.res.Respond(buf.String())
 }
