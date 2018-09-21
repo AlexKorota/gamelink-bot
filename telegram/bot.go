@@ -64,6 +64,12 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan iface.Re
 						chanel <- &RoundTrip{b, update.Message.Chat.ID,
 							update.Message.From.UserName, update.Message.Text, ""}
 					}
+				} else if update.EditedMessage != nil {
+					log.Debug("new edited message arrived")
+					if reflect.TypeOf(update.EditedMessage.Text).Kind() == reflect.String && update.EditedMessage.Text != "" {
+						chanel <- &RoundTrip{b, update.EditedMessage.Chat.ID,
+							update.EditedMessage.From.UserName, update.EditedMessage.Text, ""}
+					}
 				}
 			case <-ctx.Done():
 				log.Debug("context was closed")
