@@ -128,6 +128,8 @@ func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, error) {
 		params = strings.Split(str[ind+1:], " ")
 	} else {
 		params = strings.Split(str[ind+1:messageInd], " ")
+		params = append(params, str[messageInd:])
+		fmt.Println(str[messageInd:])
 	}
 
 	return ParseRequest(params)
