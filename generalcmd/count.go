@@ -50,7 +50,7 @@ func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 		command CountCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandCount); err != nil {
+	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+commandCount); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

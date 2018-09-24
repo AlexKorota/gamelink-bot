@@ -49,7 +49,7 @@ func (c DeleteFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		command DeleteCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandDelete); err != nil {
+	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+commandDelete); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

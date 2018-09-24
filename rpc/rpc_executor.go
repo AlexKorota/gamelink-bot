@@ -58,8 +58,8 @@ func (r RpcWorker) Find(ctx context.Context, params []*msg.OneCriteriaStruct) (*
 	return data, nil
 }
 
-func (r RpcWorker) Update(ctx context.Context, findParams []*msg.OneCriteriaStruct, setParams []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error) {
-	data, err := r.client.Update(ctx, &msg.UpdateCriteriaStruct{FindParams: findParams, SetParams: setParams})
+func (r RpcWorker) Update(ctx context.Context, findParams []*msg.OneCriteriaStruct, updParams []*msg.UpdateCriteriaStruct) (*msg.MultiUserResponse, error) {
+	data, err := r.client.Update(ctx, &msg.UpdateCriteriaRequest{FindParams: findParams, UpdParams: updParams})
 	if err != nil {
 		return nil, err
 	}
