@@ -6,6 +6,8 @@ import (
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
+	"github.com/kataras/iris/core/errors"
+	"strings"
 )
 
 type (
@@ -13,8 +15,8 @@ type (
 	UpdateFabric struct{}
 	//UpdateCommand - struct for update command
 	UpdateCommand struct {
-		params []*msg.OneCriteriaStruct
-		res    iface.Responder
+		findParams, setParams []*msg.OneCriteriaStruct
+		res                   iface.Responder
 	}
 )
 
@@ -49,7 +51,18 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		command UpdateCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandUpdate); err != nil {
+	setInd := strings.Index(req.Request(), "set")
+	if setInd < 0 {
+		return nil, errors.New("set params can't be blank")
+	}
+
+	if command.findParams, err = service.CompareParseCommand(req.Request()[:setInd], "/"+commandUpdate); err != nil {
+		if err == service.UnknownCommandError {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if command.setParams, err = service.CompareParseCommand((req.Request()[:8] + req.Request()[setInd+4:]), "/"+commandUpdate); err != nil { // Насколько костыльно прописаны индексы в подстроках???
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
@@ -61,7 +74,7 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 
 //Execute - execute command
 func (cc UpdateCommand) Execute(ctx context.Context) {
-	r, err := Executor().Update(ctx, cc.params)
+	r, err := Executor().Update(ctx, cc.findParams, cc.setParams)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

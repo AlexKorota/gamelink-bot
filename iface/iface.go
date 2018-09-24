@@ -75,7 +75,7 @@ type (
 		Count(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.CountResponse, error)
 		Delete(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.OneUserResponse, error)
 		Find(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error)
-		Update(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error)
+		Update(ctx context.Context, findParams []*msg.OneCriteriaStruct, setParams []*msg.OneCriteriaStruct) (*msg.MultiUserResponse, error)
 		SendPush(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.StringResponse, error)
 	}
 )
