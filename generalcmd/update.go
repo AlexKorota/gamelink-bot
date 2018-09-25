@@ -13,8 +13,9 @@ type (
 	UpdateFabric struct{}
 	//UpdateCommand - struct for update command
 	UpdateCommand struct {
-		params []*msg.OneCriteriaStruct
-		res    iface.Responder
+		findParams []*msg.OneCriteriaStruct
+		updParams  []*msg.UpdateCriteriaStruct
+		res        iface.Responder
 	}
 )
 
@@ -49,7 +50,7 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		command UpdateCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandUpdate); err != nil {
+	if command.findParams, command.updParams, err = service.CompareParseCommand(req.Request(), "/"+commandUpdate); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
@@ -61,7 +62,7 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 
 //Execute - execute command
 func (cc UpdateCommand) Execute(ctx context.Context) {
-	r, err := Executor().Update(ctx, cc.params)
+	r, err := Executor().Update(ctx, cc.findParams, cc.updParams)
 	if err != nil {
 		cc.res.Respond(err.Error())
 		return

@@ -1,14 +1,14 @@
-Result:
 {{ with .Users }}{{ range. }}
-        {{ if .Id }}<strong>ID</strong>: {{ .Id  }} {{ end }} {{ if .Name }}
-        <strong>Name</strong>: {{ .Name }}{{ end }} {{ if .Email }}
-        <strong>Email</strong>: {{ .Email }}  {{ end }} {{ if .FbId }}
-        <strong>FB_ID</strong>: {{ .FbId }} {{ end }} {{ if .VkId }}
-        <strong>VK_ID</strong>: {{ .VkId }} {{ end }} {{ if .Country }}
-        <strong>Country</strong>: {{ .Country }} {{ end }} {{ if .Sex }}
-        <strong>Sex</strong>: {{ .Sex }} {{ end }} {{ if .Age }}
-        <strong>Age</strong>: {{ .Age }} {{ end }} {{ if .CreatedAt }}
-        <strong>Registered_at</strong>: {{ .CreatedAt }} {{ end }} {{ if .Deleted }}
-        <strong>Deleted:</strong>: {{ .Deleted }} {{ end }}
-    {{ end }}
+{{ if .Id }}<strong>ID</strong>: {{ .Id  }} {{ end }} {{ if .Name }}
+<strong>Name</strong>: {{ .Name }}{{ end }} {{ if .Email }}
+<strong>Email</strong>: {{ .Email }}  {{ end }} {{ if .FbId }}
+<strong>FB_ID</strong>: {{ .FbId }} {{ end }} {{ if .VkId }}
+<strong>VK_ID</strong>: {{ .VkId }} {{ end }} {{ if .Country }}
+<strong>Country</strong>: {{ .Country }} {{ end }} {{ if .Sex }}
+<strong>Sex</strong>: {{ .Sex }} {{ end }} {{ if .Age }}
+<strong>Age</strong>: {{ .Age }} {{ end }} {{ if .CreatedAt }}
+<strong>Registered_at</strong>: {{ .CreatedAt }} {{ end }} {{ if .Deleted }}
+<strong>Deleted:</strong>: {{ .Deleted }} {{ end }}
+
+{{ end }}
 {{ end }}

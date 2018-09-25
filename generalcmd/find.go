@@ -51,7 +51,7 @@ func (c FindFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 		command FindCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+commandFind); err != nil {
+	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+commandFind); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

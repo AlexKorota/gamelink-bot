@@ -48,7 +48,7 @@ func (c SendFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 		command SendCommand
 		err     error
 	)
-	if command.params, err = service.CompareParseCommand(req.Request(), "/"+sendPushCommand); err != nil {
+	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+sendPushCommand); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

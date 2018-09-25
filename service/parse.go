@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp *regexp.Regexp
-	UnknownCommandError                                                                         error
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp *regexp.Regexp
+	UnknownCommandError                                                                                    error
 )
 
 func init() {
@@ -45,10 +45,16 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	updRegexp, err = regexp.Compile("(set|delete)\\[(vk_id|fb_id|sex|age|country|deleted)](=(.+))?")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
-func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, error) {
+func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, error) {
 	var multiCriteria []*msg.OneCriteriaStruct
+	var updateCriteria []*msg.UpdateCriteriaStruct
 	for _, v := range params {
 		var matches []string
 		if v == "" {
@@ -84,20 +90,24 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, error) {
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		return nil, errors.New(fmt.Sprintf("wrong param %s", v))
+		matches = updRegexp.FindStringSubmatch(v)
+		fmt.Println(v)
+		fmt.Println(matches)
+		if matches != nil {
+			appendToUpdateCriteria(&updateCriteria, matches)
+			continue
+		}
+		return nil, nil, errors.New(fmt.Sprintf("wrong param %s", v))
 	}
-	return multiCriteria, nil
+	return multiCriteria, updateCriteria, nil
 }
 
 func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []string) {
 	var criteria, secondCriteria msg.OneCriteriaStruct
-	fmt.Println(matches)
 	if matches[3] != "" {
 		if val, ok := msg.OneCriteriaStruct_Criteria_value[matches[3]]; ok {
 			criteria.Cr = msg.OneCriteriaStruct_Criteria(val)
 			secondCriteria.Cr = msg.OneCriteriaStruct_Criteria(val)
-		} else {
-			// Стоит ли тут добавить обработку ошибки на случай, если критерий не нашелся в енуме?
 		}
 	}
 	if matches[5] != "" {
@@ -112,15 +122,34 @@ func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []st
 
 		secondCriteria.Op = msg.OneCriteriaStruct_g
 		secondCriteria.Value = matches[8]
-
 		*multiCriteria = append(*multiCriteria, &secondCriteria)
 	}
 }
 
-func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, error) {
+func appendToUpdateCriteria(updateCriteria *[]*msg.UpdateCriteriaStruct, matches []string) {
+	fmt.Println(matches)
+	var criteria msg.UpdateCriteriaStruct
+	if matches[2] != "" {
+		if val, ok := msg.UpdateCriteriaStruct_UpdCriteria_value[matches[2]]; ok {
+			criteria.Ucr = msg.UpdateCriteriaStruct_UpdCriteria(val)
+		}
+	}
+	if matches[1] == msg.UpdateCriteriaStruct_set.String() {
+		criteria.Uop = msg.UpdateCriteriaStruct_set
+	} else if matches[1] == msg.UpdateCriteriaStruct_delete.String() {
+		criteria.Uop = msg.UpdateCriteriaStruct_delete
+	}
+	if matches[4] != "" {
+		criteria.Value = matches[4]
+	}
+	fmt.Println(criteria)
+	*updateCriteria = append(*updateCriteria, &criteria)
+}
+
+func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return nil, UnknownCommandError
+		return nil, nil, UnknownCommandError
 	}
 	messageInd := strings.Index(str, "message")
 	var params []string
@@ -129,7 +158,6 @@ func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, error) {
 	} else {
 		params = strings.Split(str[ind+1:messageInd], " ")
 		params = append(params, str[messageInd:])
-		fmt.Println(str[messageInd:])
 	}
 
 	return ParseRequest(params)
