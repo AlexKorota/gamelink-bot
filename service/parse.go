@@ -91,8 +91,6 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 			continue
 		}
 		matches = updRegexp.FindStringSubmatch(v)
-		fmt.Println(v)
-		fmt.Println(matches)
 		if matches != nil {
 			appendToUpdateCriteria(&updateCriteria, matches)
 			continue

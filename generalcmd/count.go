@@ -7,6 +7,7 @@ import (
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
+	"strings"
 )
 
 type (
@@ -50,6 +51,10 @@ func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 		command CountCommand
 		err     error
 	)
+	if strings.Trim(req.Request(), " ") == "/"+commandCount {
+		command.res = req
+		return command, nil
+	}
 	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+commandCount); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
