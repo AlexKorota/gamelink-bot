@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp *regexp.Regexp
-	UnknownCommandError                                                                                    error
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, lastVisitRegexp *regexp.Regexp
+	UnknownCommandError                                                                                                     error
 )
 
 func init() {
@@ -46,6 +46,10 @@ func init() {
 		log.Fatal(err)
 	}
 	updRegexp, err = regexp.Compile("(set|delete)\\[(vk_id|fb_id|sex|age|country|deleted)](=(.+))?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastVisitRegexp, err = regexp.Compile("(((logged_in)(=((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4}$)|\\[((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4});((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4})\\]$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,6 +89,11 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
+		matches = lastVisitRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
+			continue
+		}
 		matches = pushRegexp.FindStringSubmatch(v)
 		if matches != nil {
 			appendToMultiCriteria(&multiCriteria, matches)
@@ -97,6 +106,7 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 		}
 		return nil, nil, errors.New(fmt.Sprintf("wrong param %s", v))
 	}
+	fmt.Println(multiCriteria)
 	return multiCriteria, updateCriteria, nil
 }
 
@@ -140,7 +150,6 @@ func appendToUpdateCriteria(updateCriteria *[]*msg.UpdateCriteriaStruct, matches
 	if matches[4] != "" {
 		criteria.Value = matches[4]
 	}
-	fmt.Println(criteria)
 	*updateCriteria = append(*updateCriteria, &criteria)
 }
 
