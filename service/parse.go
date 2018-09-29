@@ -6,11 +6,13 @@ import (
 	msg "gamelink-go/proto_msg"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, lastVisitRegexp *regexp.Regexp
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp *regexp.Regexp
 	UnknownCommandError                                                                                                     error
 )
 
@@ -49,7 +51,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	lastVisitRegexp, err = regexp.Compile("(((logged_in)(=((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4}$)|\\[((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4});((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4})\\]$)))")
+	updatedAtRegexp, err = regexp.Compile("(((updated_at)(=((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4}$)|\\[((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4});((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4})\\]$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,8 +91,29 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		matches = lastVisitRegexp.FindStringSubmatch(v)
+		matches = updatedAtRegexp.FindStringSubmatch(v)
+		var err error
 		if matches != nil {
+			if matches[5] != "" {
+				matches[8], err = convertToUnix(matches[5] + " 00:00:00")
+				if err != nil {
+					return nil, nil, err
+				}
+				matches[11], err = convertToUnix(matches[5] + " 23:59:59")
+				if err != nil {
+					return nil, nil, err
+				}
+				matches[5] = ""
+			} else if matches[8] != "" && matches[11] != "" {
+				matches[8], err = convertToUnix(matches[8] + " 00:00:00")
+				if err != nil {
+					return nil, nil, err
+				}
+				matches[11], err = convertToUnix(matches[11] + " 23:59:59")
+				if err != nil {
+					return nil, nil, err
+				}
+			}
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
@@ -193,4 +216,14 @@ func ParsePermissionRequest(params string) (string, []string, error) {
 		return "", nil, errors.New("there is no available params")
 	}
 	return userName, permissions, nil
+}
+
+func convertToUnix(date string) (string, error) {
+	lay := "2.1.2006 15:04:05"
+	t, err := time.Parse(lay, date)
+	if err != nil {
+		return "", err
+	}
+	stringUnix := strconv.Itoa(int(t.Unix()))
+	return stringUnix, nil
 }
