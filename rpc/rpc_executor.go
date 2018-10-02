@@ -66,8 +66,8 @@ func (r RpcWorker) Update(ctx context.Context, findParams []*msg.OneCriteriaStru
 	return data, nil
 }
 
-func (r RpcWorker) SendPush(ctx context.Context, params []*msg.OneCriteriaStruct) (*msg.StringResponse, error) {
-	data, err := r.client.SendPush(ctx, &msg.MultiCriteriaRequest{Params: params})
+func (r RpcWorker) SendPush(ctx context.Context, params []*msg.OneCriteriaStruct, message string) (*msg.StringResponse, error) {
+	data, err := r.client.SendPush(ctx, &msg.PushCriteriaRequest{Params: params, Message: message})
 	if err != nil {
 		return nil, err
 	}

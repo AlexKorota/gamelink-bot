@@ -13,8 +13,9 @@ type (
 	SendFabric struct{}
 	//SendCommand - struct for send command
 	SendCommand struct {
-		params []*msg.OneCriteriaStruct
-		res    iface.Responder
+		params  []*msg.OneCriteriaStruct
+		message string
+		res     iface.Responder
 	}
 )
 
@@ -48,7 +49,7 @@ func (c SendFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 		command SendCommand
 		err     error
 	)
-	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+sendPushCommand); err != nil {
+	if command.params, _, command.message, err = service.CompareParseCommand(req.Request(), "/"+sendPushCommand); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
@@ -60,7 +61,7 @@ func (c SendFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 
 //Execute - execute command
 func (sc SendCommand) Execute(ctx context.Context) {
-	r, err := Executor().SendPush(ctx, sc.params)
+	r, err := Executor().SendPush(ctx, sc.params, sc.message)
 	if err != nil {
 		sc.res.Respond(err.Error())
 		return

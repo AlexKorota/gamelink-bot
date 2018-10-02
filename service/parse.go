@@ -58,9 +58,10 @@ func init() {
 
 }
 
-func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, error) {
+func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, string, error) {
 	var multiCriteria []*msg.OneCriteriaStruct
 	var updateCriteria []*msg.UpdateCriteriaStruct
+	var message string
 	for _, v := range params {
 		var matches []string
 		if v == "" {
@@ -97,21 +98,21 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 			if matches[5] != "" {
 				matches[8], err = convertToUnix(matches[5] + " 00:00:00")
 				if err != nil {
-					return nil, nil, err
+					return nil, nil, "", err
 				}
 				matches[11], err = convertToUnix(matches[5] + " 23:59:59")
 				if err != nil {
-					return nil, nil, err
+					return nil, nil, "", err
 				}
 				matches[5] = ""
 			} else if matches[8] != "" && matches[11] != "" {
 				matches[8], err = convertToUnix(matches[8] + " 00:00:00")
 				if err != nil {
-					return nil, nil, err
+					return nil, nil, "", err
 				}
 				matches[11], err = convertToUnix(matches[11] + " 23:59:59")
 				if err != nil {
-					return nil, nil, err
+					return nil, nil, "", err
 				}
 			}
 			appendToMultiCriteria(&multiCriteria, matches)
@@ -119,7 +120,7 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 		}
 		matches = pushRegexp.FindStringSubmatch(v)
 		if matches != nil {
-			appendToMultiCriteria(&multiCriteria, matches)
+			message = matches[5]
 			continue
 		}
 		matches = updRegexp.FindStringSubmatch(v)
@@ -127,10 +128,9 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 			appendToUpdateCriteria(&updateCriteria, matches)
 			continue
 		}
-		return nil, nil, errors.New(fmt.Sprintf("wrong param %s", v))
+		return nil, nil, "", errors.New(fmt.Sprintf("wrong param %s", v))
 	}
-	fmt.Println(multiCriteria)
-	return multiCriteria, updateCriteria, nil
+	return multiCriteria, updateCriteria, message, nil
 }
 
 func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []string) {
@@ -176,10 +176,10 @@ func appendToUpdateCriteria(updateCriteria *[]*msg.UpdateCriteriaStruct, matches
 	*updateCriteria = append(*updateCriteria, &criteria)
 }
 
-func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, error) {
+func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, string, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return nil, nil, UnknownCommandError
+		return nil, nil, "", UnknownCommandError
 	}
 	messageInd := strings.Index(str, "message")
 	var params []string

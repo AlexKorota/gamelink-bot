@@ -50,7 +50,7 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		command UpdateCommand
 		err     error
 	)
-	if command.findParams, command.updParams, err = service.CompareParseCommand(req.Request(), "/"+commandUpdate); err != nil {
+	if command.findParams, command.updParams, _, err = service.CompareParseCommand(req.Request(), "/"+commandUpdate); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
