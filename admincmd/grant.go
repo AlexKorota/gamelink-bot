@@ -2,6 +2,7 @@ package admincmd
 
 import (
 	"context"
+	"gamelinkBot/command_list"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -19,10 +20,11 @@ type (
 	}
 )
 
-const (
-	//commandGrant - const for command name
-	commandGrant = "grant_permissions"
-)
+//
+//const (
+//	//commandGrant - const for command name
+//	commandGrant = "grant_permissions"
+//)
 
 //init - func for register fabric in parser
 func init() {
@@ -31,7 +33,7 @@ func init() {
 
 //CommandName - return human readable command name
 func (c GrantFabric) CommandName() string {
-	return commandGrant
+	return command_list.CommandGrants
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -41,7 +43,7 @@ func (c GrantFabric) RequireAdmin() bool {
 
 //Require - return array of needed permissions
 func (c GrantFabric) Require() []string {
-	return []string{commandGrant}
+	return []string{command_list.CommandGrants}
 }
 
 //TryParse - func for parsing request
@@ -50,7 +52,7 @@ func (c GrantFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 		command GrantCommand
 		err     error
 	)
-	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+commandGrant); err != nil {
+	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+command_list.CommandGrants); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

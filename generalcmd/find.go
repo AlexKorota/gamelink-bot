@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	msg "gamelink-go/proto_msg"
+	"gamelinkBot/command_list"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -20,10 +21,11 @@ type (
 	}
 )
 
-const (
-	//commandFind - const for command
-	commandFind = "find"
-)
+//
+//const (
+//	//commandFind - const for command
+//	commandFind = "find"
+//)
 
 //init - func for register fabric in parser
 func init() {
@@ -32,7 +34,7 @@ func init() {
 
 //CommandName - return human readable command name
 func (c FindFabric) CommandName() string {
-	return commandFind
+	return command_list.CommandFind
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -42,7 +44,7 @@ func (f FindFabric) RequireAdmin() bool {
 
 //Require - return array of needed permissions
 func (f FindFabric) Require() []string {
-	return []string{commandFind}
+	return []string{command_list.CommandFind}
 }
 
 //TryParse - func for parsing request
@@ -51,7 +53,7 @@ func (c FindFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 		command FindCommand
 		err     error
 	)
-	if command.params, _, _, err = service.CompareParseCommand(req.Request(), "/"+commandFind); err != nil {
+	if command.params, _, _, err = service.CompareParseCommand(req.Request(), "/"+command_list.CommandFind); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

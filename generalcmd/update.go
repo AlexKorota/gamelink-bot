@@ -3,6 +3,7 @@ package generalcmd
 import (
 	"context"
 	msg "gamelink-go/proto_msg"
+	"gamelinkBot/command_list"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -19,10 +20,11 @@ type (
 	}
 )
 
-const (
-	//commandUpdate - const for command name
-	commandUpdate = "update"
-)
+//
+//const (
+//	//CommandUpdate - const for command name
+//	CommandUpdate = "update"
+//)
 
 //init - func for register fabric in parser
 func init() {
@@ -31,7 +33,7 @@ func init() {
 
 //CommandName - return human readable command name
 func (c UpdateFabric) CommandName() string {
-	return commandUpdate
+	return command_list.CommandUpdate
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -41,7 +43,7 @@ func (c UpdateFabric) RequireAdmin() bool {
 
 //Require - return array of needed permissions
 func (c UpdateFabric) Require() []string {
-	return []string{commandUpdate}
+	return []string{command_list.CommandUpdate}
 }
 
 //TryParse - func for parsing request
@@ -50,7 +52,7 @@ func (c UpdateFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		command UpdateCommand
 		err     error
 	)
-	if command.findParams, command.updParams, _, err = service.CompareParseCommand(req.Request(), "/"+commandUpdate); err != nil {
+	if command.findParams, command.updParams, _, err = service.CompareParseCommand(req.Request(), "/"+command_list.CommandUpdate); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
