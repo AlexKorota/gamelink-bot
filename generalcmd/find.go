@@ -21,12 +21,6 @@ type (
 	}
 )
 
-//
-//const (
-//	//commandFind - const for command
-//	commandFind = "find"
-//)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(FindFabric{})

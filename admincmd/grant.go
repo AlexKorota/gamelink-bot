@@ -20,12 +20,6 @@ type (
 	}
 )
 
-//
-//const (
-//	//commandGrant - const for command name
-//	commandGrant = "grant_permissions"
-//)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(GrantFabric{})

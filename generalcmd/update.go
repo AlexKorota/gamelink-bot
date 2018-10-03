@@ -20,12 +20,6 @@ type (
 	}
 )
 
-//
-//const (
-//	//CommandUpdate - const for command name
-//	CommandUpdate = "update"
-//)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(UpdateFabric{})

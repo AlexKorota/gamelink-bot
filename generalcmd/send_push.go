@@ -20,11 +20,6 @@ type (
 	}
 )
 
-//
-//const (
-//	CommandSendPush = "send_push"
-//)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(SendFabric{})

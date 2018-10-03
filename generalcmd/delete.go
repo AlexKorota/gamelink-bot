@@ -19,12 +19,6 @@ type (
 	}
 )
 
-//
-//const (
-//	//commandDelete - const for command
-//	commandDelete = "delete"
-//)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(DeleteFabric{})

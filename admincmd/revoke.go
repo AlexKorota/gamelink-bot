@@ -20,11 +20,6 @@ type (
 	}
 )
 
-//const (
-//	//commandRevoke - const for revoke command name
-//	commandRevoke = "revoke_permissions"
-//)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(RevokeFabric{})

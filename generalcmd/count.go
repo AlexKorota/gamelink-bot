@@ -21,12 +21,6 @@ type (
 	}
 )
 
-//
-//const (
-//	//commandCount - const for command name
-//	commandCount = "count"
-//)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(CountFabric{})
