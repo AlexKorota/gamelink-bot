@@ -91,37 +91,18 @@ func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg
 		}
 		matches = registrationRegexp.FindStringSubmatch(v)
 		if matches != nil {
+			matches, err := appendTimeParams(matches)
+			if err != nil {
+				return nil, nil, "", err
+			}
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
 		matches = updatedAtRegexp.FindStringSubmatch(v)
-		//var err error
 		if matches != nil {
-			if matches[5] != "" {
-				p, err := parseDate(matches[5])
-				if err != nil {
-					return nil, nil, "", err
-				}
-				s := time.Date(p["year"], time.Month(p["month"]), p["day"], 00, 00, 00, 00, time.Local).Unix()
-				matches[8] = strconv.Itoa(int(s))
-
-				e := time.Date(p["year"], time.Month(p["month"]), p["day"], 23, 59, 59, 59, time.Local).Unix()
-				matches[11] = strconv.Itoa(int(e))
-				matches[5] = ""
-			} else if matches[8] != "" && matches[11] != "" {
-				p, err := parseDate(matches[8])
-				if err != nil {
-					return nil, nil, "", err
-				}
-				s := time.Date(p["year"], time.Month(p["month"]), p["day"], 00, 00, 00, 00, time.Local).Unix()
-				matches[8] = strconv.Itoa(int(s))
-
-				p, err = parseDate(matches[11])
-				if err != nil {
-					return nil, nil, "", err
-				}
-				e := time.Date(p["year"], time.Month(p["month"]), p["day"], 23, 59, 59, 59, time.Local).Unix()
-				matches[11] = strconv.Itoa(int(e))
+			matches, err := appendTimeParams(matches)
+			if err != nil {
+				return nil, nil, "", err
 			}
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
@@ -143,25 +124,6 @@ func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg
 		return nil, nil, "", errors.New(fmt.Sprintf("wrong param %s", v))
 	}
 	return multiCriteria, updateCriteria, message, nil
-}
-
-func parseDate(match string) (map[string]int, error) {
-	p := make(map[string]int)
-	var err error
-	parts := strings.Split(match, ".")
-	p["day"], err = strconv.Atoi(parts[0])
-	if err != nil {
-		return nil, err
-	}
-	p["month"], err = strconv.Atoi(parts[1])
-	if err != nil {
-		return nil, err
-	}
-	p["year"], err = strconv.Atoi(parts[2])
-	if err != nil {
-		return nil, err
-	}
-	return p, nil
 }
 
 func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []string) {
@@ -248,12 +210,41 @@ func ParsePermissionRequest(params string) (string, []string, error) {
 	return userName, permissions, nil
 }
 
-func convertToUnix(date string) (string, error) {
-	lay := "2.1.2006 15:04:05"
-	t, err := time.Parse(lay, date)
-	if err != nil {
-		return "", err
+func appendTimeParams(matches []string) ([]string, error) {
+	if matches[5] != "" {
+		t, err := stringToTime(matches[5])
+		if err != nil {
+			return nil, err
+		}
+		s := time.Date(t.Year(), t.Month(), t.Day(), 00, 00, 00, 00, time.Local).Unix()
+		matches[8] = strconv.Itoa(int(s))
+
+		e := time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 59, time.Local).Unix()
+		matches[11] = strconv.Itoa(int(e))
+		matches[5] = ""
+	} else if matches[8] != "" && matches[11] != "" {
+		t1, err := stringToTime(matches[8])
+		if err != nil {
+			return nil, err
+		}
+		s := time.Date(t1.Year(), t1.Month(), t1.Day(), 00, 00, 00, 00, time.Local).Unix()
+		matches[8] = strconv.Itoa(int(s))
+
+		t2, err := stringToTime(matches[11])
+		if err != nil {
+			return nil, err
+		}
+		e := time.Date(t2.Year(), t2.Month(), t2.Day(), 23, 59, 59, 59, time.Local).Unix()
+		matches[11] = strconv.Itoa(int(e))
 	}
-	stringUnix := strconv.Itoa(int(t.Unix()))
-	return stringUnix, nil
+	return matches, nil
+}
+
+func stringToTime(date string) (time.Time, error) {
+	lay := "2.1.2006"
+	t, err := time.ParseInLocation(lay, date, time.Local)
+	if err != nil {
+		return t.AddDate(0, 0, 0), err
+	}
+	return t, nil
 }
