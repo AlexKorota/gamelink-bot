@@ -2,6 +2,7 @@ package admincmd
 
 import (
 	"context"
+	"gamelinkBot/command_list"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -19,11 +20,6 @@ type (
 	}
 )
 
-const (
-	//commandRevoke - const for revoke command name
-	commandRevoke = "revoke_permissions"
-)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(RevokeFabric{})
@@ -31,7 +27,7 @@ func init() {
 
 //CommandName - return human readable command name
 func (c RevokeFabric) CommandName() string {
-	return commandRevoke
+	return command_list.CommandRevoke
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -41,7 +37,7 @@ func (c RevokeFabric) RequireAdmin() bool {
 
 //Require - return array of needed permissions
 func (c RevokeFabric) Require() []string {
-	return []string{commandRevoke}
+	return []string{command_list.CommandRevoke}
 }
 
 //TryParse - func for parsing request
@@ -50,7 +46,7 @@ func (c RevokeFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		command RevokeCommand
 		err     error
 	)
-	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+commandRevoke); err != nil {
+	if command.userName, command.params, err = service.CompareParsePermissionCommand(req.Request(), "/"+command_list.CommandRevoke); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

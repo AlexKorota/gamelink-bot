@@ -3,6 +3,7 @@ package generalcmd
 import (
 	"context"
 	msg "gamelink-go/proto_msg"
+	"gamelinkBot/command_list"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -13,13 +14,10 @@ type (
 	SendFabric struct{}
 	//SendCommand - struct for send command
 	SendCommand struct {
-		params []*msg.OneCriteriaStruct
-		res    iface.Responder
+		params  []*msg.OneCriteriaStruct
+		message string
+		res     iface.Responder
 	}
-)
-
-const (
-	sendPushCommand = "send_push"
 )
 
 //init - func for register fabric in parser
@@ -34,12 +32,12 @@ func (c SendFabric) RequireAdmin() bool {
 
 //Require - return array of needed permissions
 func (c SendFabric) Require() []string {
-	return []string{sendPushCommand}
+	return []string{command_list.CommandSendPush}
 }
 
 //CommandName - return human readable command name
 func (c SendFabric) CommandName() string {
-	return sendPushCommand
+	return command_list.CommandSendPush
 }
 
 //TryParse - func for parsing request
@@ -48,7 +46,7 @@ func (c SendFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 		command SendCommand
 		err     error
 	)
-	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+sendPushCommand); err != nil {
+	if command.params, _, command.message, err = service.CompareParseCommand(req.Request(), "/"+command_list.CommandSendPush); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
@@ -60,7 +58,7 @@ func (c SendFabric) TryParse(req iface.RequesterResponder) (iface.Command, error
 
 //Execute - execute command
 func (sc SendCommand) Execute(ctx context.Context) {
-	r, err := Executor().SendPush(ctx, sc.params)
+	r, err := Executor().SendPush(ctx, sc.params, sc.message)
 	if err != nil {
 		sc.res.Respond(err.Error())
 		return

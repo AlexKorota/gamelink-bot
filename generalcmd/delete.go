@@ -3,6 +3,7 @@ package generalcmd
 import (
 	"context"
 	msg "gamelink-go/proto_msg"
+	"gamelinkBot/command_list"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
@@ -18,11 +19,6 @@ type (
 	}
 )
 
-const (
-	//commandDelete - const for command
-	commandDelete = "delete"
-)
-
 //init - func for register fabric in parser
 func init() {
 	parser.SharedParser().RegisterFabric(DeleteFabric{})
@@ -30,7 +26,7 @@ func init() {
 
 //CommandName - return human readable command name
 func (c DeleteFabric) CommandName() string {
-	return commandDelete
+	return command_list.CommandDelete
 }
 
 //RequireAdmin - func for checking if admin permissions required
@@ -40,7 +36,7 @@ func (c DeleteFabric) RequireAdmin() bool {
 
 //Require - return array of needed permissions
 func (c DeleteFabric) Require() []string {
-	return []string{commandDelete}
+	return []string{command_list.CommandDelete}
 }
 
 //TryParse - func for parsing request
@@ -49,7 +45,7 @@ func (c DeleteFabric) TryParse(req iface.RequesterResponder) (iface.Command, err
 		command DeleteCommand
 		err     error
 	)
-	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+commandDelete); err != nil {
+	if command.params, _, _, err = service.CompareParseCommand(req.Request(), "/"+command_list.CommandDelete); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}

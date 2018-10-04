@@ -4,20 +4,23 @@ import (
 	"errors"
 	"fmt"
 	msg "gamelink-go/proto_msg"
+	"gamelinkBot/command_list"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp *regexp.Regexp
-	UnknownCommandError                                                                                    error
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp *regexp.Regexp
+	UnknownCommandError                                                                                                     error
 )
 
 func init() {
 	var err error
 	UnknownCommandError = errors.New("Unknown command")
-	ageRegexp, err = regexp.Compile("(((age)\\s*(=\\s*([0-9]{1,2}$)|\\[\\s*((([0-9]{1,2})))\\s*;\\s*((([0-9]{1,2})))\\s*\\]$)))")
+	ageRegexp, err = regexp.Compile("(((^age)\\s*(=\\s*([0-9]{1,2}$)|\\[\\s*((([0-9]{1,2})))\\s*;\\s*((([0-9]{1,2})))\\s*\\]$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,7 +36,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	registrationRegexp, err = regexp.Compile("(((created_at)\\s*(=\\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4}$)|\\[\\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4})\\s*;\\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\\.(0[1-9]|1[012])\\.[0-9]{4})\\]$)))") //(((created_at)\s*(=\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4}$)|\[\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4})\s*;\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4})\]$)))
+	registrationRegexp, err = regexp.Compile("(((created_at)\\s*(=\\s*((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4}$)|\\[\\s*((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4})\\s*;\\s*((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4})\\]$)))") //(((created_at)\s*(=\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4}$)|\[\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4})\s*;\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4})\]$)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +44,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	pushRegexp, err = regexp.Compile("(((message)))\\s*=\\s*((.+))")
+	pushRegexp, err = regexp.Compile("(((message)))\\s*{{1}\\s*((.+))}{1}")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,12 +52,17 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	updatedAtRegexp, err = regexp.Compile("(((updated_at)(=((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4}$)|\\[((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4});((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4})\\]$)))")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
-func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, error) {
+func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, string, error) {
 	var multiCriteria []*msg.OneCriteriaStruct
 	var updateCriteria []*msg.UpdateCriteriaStruct
+	var message string
 	for _, v := range params {
 		var matches []string
 		if v == "" {
@@ -62,6 +70,7 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 		}
 		matches = ageRegexp.FindStringSubmatch(v)
 		if matches != nil {
+
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
@@ -82,24 +91,39 @@ func ParseRequest(params []string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCrite
 		}
 		matches = registrationRegexp.FindStringSubmatch(v)
 		if matches != nil {
+			matches, err := appendTimeParams(matches)
+			if err != nil {
+				return nil, nil, "", err
+			}
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		matches = pushRegexp.FindStringSubmatch(v)
+		matches = updatedAtRegexp.FindStringSubmatch(v)
 		if matches != nil {
+			matches, err := appendTimeParams(matches)
+			if err != nil {
+				return nil, nil, "", err
+			}
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
-		matches = updRegexp.FindStringSubmatch(v)
-		fmt.Println(v)
-		fmt.Println(matches)
-		if matches != nil {
-			appendToUpdateCriteria(&updateCriteria, matches)
-			continue
+		if cmd == "/"+command_list.CommandSendPush {
+			matches = pushRegexp.FindStringSubmatch(v)
+			if matches != nil {
+				message = matches[5]
+				continue
+			}
 		}
-		return nil, nil, errors.New(fmt.Sprintf("wrong param %s", v))
+		if cmd == "/"+command_list.CommandUpdate {
+			matches = updRegexp.FindStringSubmatch(v)
+			if matches != nil {
+				appendToUpdateCriteria(&updateCriteria, matches)
+				continue
+			}
+		}
+		return nil, nil, "", errors.New(fmt.Sprintf("wrong param %s", v))
 	}
-	return multiCriteria, updateCriteria, nil
+	return multiCriteria, updateCriteria, message, nil
 }
 
 func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []string) {
@@ -127,7 +151,6 @@ func appendToMultiCriteria(multiCriteria *[]*msg.OneCriteriaStruct, matches []st
 }
 
 func appendToUpdateCriteria(updateCriteria *[]*msg.UpdateCriteriaStruct, matches []string) {
-	fmt.Println(matches)
 	var criteria msg.UpdateCriteriaStruct
 	if matches[2] != "" {
 		if val, ok := msg.UpdateCriteriaStruct_UpdCriteria_value[matches[2]]; ok {
@@ -142,14 +165,13 @@ func appendToUpdateCriteria(updateCriteria *[]*msg.UpdateCriteriaStruct, matches
 	if matches[4] != "" {
 		criteria.Value = matches[4]
 	}
-	fmt.Println(criteria)
 	*updateCriteria = append(*updateCriteria, &criteria)
 }
 
-func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, error) {
+func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, []*msg.UpdateCriteriaStruct, string, error) {
 	ind := strings.Index(str, " ")
 	if ind < 0 || str[:ind] != cmd {
-		return nil, nil, UnknownCommandError
+		return nil, nil, "", UnknownCommandError
 	}
 	messageInd := strings.Index(str, "message")
 	var params []string
@@ -160,7 +182,7 @@ func CompareParseCommand(str, cmd string) ([]*msg.OneCriteriaStruct, []*msg.Upda
 		params = append(params, str[messageInd:])
 	}
 
-	return ParseRequest(params)
+	return ParseRequest(params, cmd)
 }
 
 func CompareParsePermissionCommand(str, cmd string) (string, []string, error) {
@@ -186,4 +208,43 @@ func ParsePermissionRequest(params string) (string, []string, error) {
 		return "", nil, errors.New("there is no available params")
 	}
 	return userName, permissions, nil
+}
+
+func appendTimeParams(matches []string) ([]string, error) {
+	if matches[5] != "" {
+		t, err := stringToTime(matches[5])
+		if err != nil {
+			return nil, err
+		}
+		s := time.Date(t.Year(), t.Month(), t.Day(), 00, 00, 00, 00, time.Local).Unix()
+		matches[8] = strconv.Itoa(int(s))
+
+		e := time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 59, time.Local).Unix()
+		matches[11] = strconv.Itoa(int(e))
+		matches[5] = ""
+	} else if matches[8] != "" && matches[11] != "" {
+		t1, err := stringToTime(matches[8])
+		if err != nil {
+			return nil, err
+		}
+		s := time.Date(t1.Year(), t1.Month(), t1.Day(), 00, 00, 00, 00, time.Local).Unix()
+		matches[8] = strconv.Itoa(int(s))
+
+		t2, err := stringToTime(matches[11])
+		if err != nil {
+			return nil, err
+		}
+		e := time.Date(t2.Year(), t2.Month(), t2.Day(), 23, 59, 59, 59, time.Local).Unix()
+		matches[11] = strconv.Itoa(int(e))
+	}
+	return matches, nil
+}
+
+func stringToTime(date string) (time.Time, error) {
+	lay := "2.1.2006"
+	t, err := time.ParseInLocation(lay, date, time.Local)
+	if err != nil {
+		return t.AddDate(0, 0, 0), err
+	}
+	return t, nil
 }

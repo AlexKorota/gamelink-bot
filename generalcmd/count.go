@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	msg "gamelink-go/proto_msg"
+	"gamelinkBot/command_list"
 	"gamelinkBot/iface"
 	"gamelinkBot/parser"
 	"gamelinkBot/service"
+	"strings"
 )
 
 type (
@@ -17,11 +19,6 @@ type (
 		params []*msg.OneCriteriaStruct
 		res    iface.Responder
 	}
-)
-
-const (
-	//commandCount - const for command name
-	commandCount = "count"
 )
 
 //init - func for register fabric in parser
@@ -36,12 +33,12 @@ func (c CountFabric) RequireAdmin() bool {
 
 //Require - return array of needed permissions
 func (c CountFabric) Require() []string {
-	return []string{commandCount}
+	return []string{command_list.CommandCount}
 }
 
 //CommandName - return human readable command name
 func (c CountFabric) CommandName() string {
-	return commandCount
+	return command_list.CommandCount
 }
 
 //TryParse - func for parsing request
@@ -50,7 +47,11 @@ func (c CountFabric) TryParse(req iface.RequesterResponder) (iface.Command, erro
 		command CountCommand
 		err     error
 	)
-	if command.params, _, err = service.CompareParseCommand(req.Request(), "/"+commandCount); err != nil {
+	if strings.Trim(req.Request(), " ") == "/"+command_list.CommandCount {
+		command.res = req
+		return command, nil
+	}
+	if command.params, _, _, err = service.CompareParseCommand(req.Request(), "/"+command_list.CommandCount); err != nil {
 		if err == service.UnknownCommandError {
 			return nil, nil
 		}
