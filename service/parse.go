@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp *regexp.Regexp
-	UnknownCommandError                                                                                                     error
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp, adsRegexp, paymentRegexp *regexp.Regexp
+	UnknownCommandError                                                                                                                               error
 )
 
 func init() {
@@ -36,6 +36,17 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	adsRegexp, err = regexp.Compile("(((watched_ads)\\s*(=\\s*(0|1)$)))")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	paymentRegexp, err = regexp.Compile("(((made_payment)\\s*(=\\s*(0|1)$)))")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	registrationRegexp, err = regexp.Compile("(((created_at)\\s*(=\\s*((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4}$)|\\[\\s*((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4})\\s*;\\s*((0?[1-9]|1[0-9]|2[0-9]|3[01])\\.(0?[1-9]|1[012])\\.[0-9]{4})\\]$)))") //(((created_at)\s*(=\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4}$)|\[\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4})\s*;\s*((0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4})\]$)))
 	if err != nil {
 		log.Fatal(err)
@@ -89,6 +100,16 @@ func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
+		matches = adsRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
+			continue
+		}
+		matches = paymentRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
+			continue
+		}
 		matches = registrationRegexp.FindStringSubmatch(v)
 		if matches != nil {
 			matches, err := appendTimeParams(matches)
@@ -107,6 +128,7 @@ func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
+		//This check only for send push command
 		if cmd == "/"+command_list.CommandSendPush {
 			matches = pushRegexp.FindStringSubmatch(v)
 			if matches != nil {
@@ -114,6 +136,7 @@ func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg
 				continue
 			}
 		}
+		//This check only for update command
 		if cmd == "/"+command_list.CommandUpdate {
 			matches = updRegexp.FindStringSubmatch(v)
 			if matches != nil {
