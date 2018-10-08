@@ -3,7 +3,6 @@ package permission
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"gamelinkBot/admincmd"
 	"gamelinkBot/config"
 	"gamelinkBot/iface"
@@ -23,7 +22,7 @@ type (
 	}
 )
 
-//init - add PermissionWorker(permChecker) to parser, create permfile if no exist
+//init - add PermissionWorker(permChecker) to parser, create permfile if not exist
 func init() {
 	if _, err := os.Stat(config.PermFile); os.IsNotExist(err) {
 		log.Print("create new file")
@@ -73,7 +72,7 @@ func (w PermissionWorker) IsAdmin(userName string) (bool, error) {
 func (w PermissionWorker) HasPermissions(userName string, permissions []string) (bool, error) {
 	log.WithFields(log.Fields{"userName": userName, "permissions": permissions}).Debug("permission.HasPermissions call")
 	admin, _ := w.findUser(userName)
-	if admin != nil {
+	if admin == nil {
 		return false, errors.New(userName + " isn't admin")
 	}
 	log.WithField("permissions", permissions).Debug("user")
@@ -95,7 +94,6 @@ func (w PermissionWorker) HasPermissions(userName string, permissions []string) 
 //GrantPermissions - update/create permissions entry for user
 func (w *PermissionWorker) GrantPermissions(userName string, permissions []string) (*iface.OneAdminRequestStruct, error) {
 	admin, k := w.findUser(userName)
-	fmt.Println(admin)
 	if admin == nil {
 		newAdmin := iface.OneAdminRequestStruct{Name: userName, Permissions: permissions}
 		w.Admins.Admins = append(w.Admins.Admins, newAdmin)
