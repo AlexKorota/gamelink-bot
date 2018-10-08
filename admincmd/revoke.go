@@ -63,5 +63,9 @@ func (cc RevokeCommand) Execute(ctx context.Context) {
 		cc.res.Respond(err.Error())
 		return
 	}
-	cc.res.Respond("Success " + user.Name + " now has next permissions: " + strings.Join(user.Permissions, ", "))
+	if user == nil {
+		cc.res.Respond("there is no admin with this name anymore")
+	} else {
+		cc.res.Respond("Success " + user.Name + " now has next permissions: " + strings.Join(user.Permissions, ", "))
+	}
 }

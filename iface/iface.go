@@ -55,15 +55,20 @@ type (
 		HasPermissions(userName string, permissions []string) (bool, error) //Check if user who send request has required permissions
 	}
 
-	//AdminRequestStruct - admin data struct from mongoDB
-	AdminRequestStruct struct {
-		Name        string //UserName
-		Permissions []string
+	//OneAdminRequestStruct - admin data struct from admin file
+	OneAdminRequestStruct struct {
+		Name        string   `json:"name"` //UserName
+		Permissions []string `json:"perms"`
 	}
+	//ManyAdminsStruct - strucet for many admins from admin file
+	ManyAdminsStruct struct {
+		Admins []OneAdminRequestStruct `json:"admins"`
+	}
+
 	//PermissionController - interface for adding and revoke users permissions
 	PermissionController interface {
-		GrantPermissions(userName string, permissions []string) (*AdminRequestStruct, error)
-		RevokePermissions(userName string, permissions []string) (*AdminRequestStruct, error)
+		GrantPermissions(userName string, permissions []string) (*OneAdminRequestStruct, error)
+		RevokePermissions(userName string, permissions []string) (*OneAdminRequestStruct, error)
 	}
 	//AdminExecutor - interface for admin commands. Allows to check permissions, execute admin commands
 	AdminExecutor interface {
