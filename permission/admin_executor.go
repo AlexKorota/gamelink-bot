@@ -3,6 +3,7 @@ package permission
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gamelinkBot/admincmd"
 	"gamelinkBot/config"
 	"gamelinkBot/iface"
@@ -15,51 +16,58 @@ import (
 )
 
 type (
-	//PermissionWorker - strucnt for work with MongoDB
-	PermissionWorker struct {
-		Admins []iface.OneAdminRequestStruct `json:"admins"`
-		m      sync.RWMutex
+	//Admin - struct for admin
+	Admin iface.AdminRequestStruct
+	//Admins - struct for all admins
+	Admins []Admin
+	//AdminFileWorker - strucnt for work with MongoDB
+	AdminFileWorker struct {
+		admins Admins `json:"admins"`
+		lock   sync.RWMutex
 	}
 )
 
-//init - add PermissionWorker(permChecker) to parser, create permfile if not exist
+//init - add AdminFileWorker(permChecker) to parser, create permfile if not exist
 func init() {
+	w := &AdminFileWorker{}
 	if _, err := os.Stat(config.PermFile); os.IsNotExist(err) {
-		log.Print("create new file")
-		jfile, err := os.Create(config.PermFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		jfile.Close()
-	}
-	w, err := NewPermissionWorker()
-	if err != nil {
-		log.Fatal(err)
+		w.create()
+	} else {
+		w.load()
 	}
 	parser.SharedParser().SetChecker(w)
 	admincmd.SetExecutor(w)
 }
 
-//NewPermissionWorker - make new worker with info from file
-func NewPermissionWorker() (iface.AdminExecutor, error) {
-	f, err := os.OpenFile(config.PermFile, os.O_RDWR, os.ModeAppend)
+//create - create new permissions file
+func (afw *AdminFileWorker) create() {
+	log.Print("create new file")
+	jfile, err := os.Create(config.PermFile)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
+	}
+	jfile.Close()
+}
+
+//load - load data from permission file to worker struct
+func (afw *AdminFileWorker) load() {
+	f, err := os.OpenFile(config.PermFile, os.O_RDWR, os.ModeAppend)
+	defer f.Close()
+	if err != nil {
+		return
 	}
 	bytes, err := ioutil.ReadAll(f)
 	if err != nil {
-		return nil, err
+		return
 	}
-	var admins []iface.OneAdminRequestStruct
-	err = json.Unmarshal(bytes, &admins)
+	err = json.Unmarshal(bytes, &afw.admins)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return &PermissionWorker{Admins: admins}, nil
 }
 
 //IsAdmin - check if user is superAdmin
-func (w PermissionWorker) IsAdmin(userName string) (bool, error) {
+func (w AdminFileWorker) IsAdmin(userName string) (bool, error) {
 	if userName == "" {
 		return false, nil
 	}
@@ -72,150 +80,134 @@ func (w PermissionWorker) IsAdmin(userName string) (bool, error) {
 }
 
 //HasPermissions - check (from permission) does the user who send command have the necessary permissions
-func (w PermissionWorker) HasPermissions(userName string, permissions []string) (bool, error) {
-	w.m.RLock()
-	defer w.m.RUnlock()
+func (afw AdminFileWorker) HasPermissions(userName string, permissions []string) (bool, error) {
+	afw.lock.RLock()
+	defer afw.lock.RUnlock()
 	log.WithFields(log.Fields{"userName": userName, "permissions": permissions}).Debug("permission.HasPermissions call")
-	admin, _ := w.findUser(userName)
-	if admin == nil {
+	a := afw.admins.findAdmin(userName)
+	if a == nil {
 		return false, errors.New(userName + " isn't admin")
 	}
 	log.WithField("permissions", permissions).Debug("user")
-	for _, checkPerm := range permissions {
-		successOne := false
-		for _, ep := range admin.Permissions {
-			if checkPerm == ep {
-				successOne = true
-				break
-			}
-		}
-		if !successOne {
-			return false, errors.New(userName + " has't enough permissions")
+	return a.checkPermissions(permissions), nil
+}
+
+func (a *Admin) checkPermissions(pp []string) bool {
+	for _, rp := range pp {
+		if !a.checkPermission(rp) {
+			return false
 		}
 	}
-	return true, nil
+	return true
+}
+
+func (a *Admin) checkPermission(p string) bool {
+	for _, hp := range a.Permissions {
+		if p == hp {
+			return true
+		}
+	}
+	return false
 }
 
 //GrantPermissions - update/create permissions entry for user
-func (w *PermissionWorker) GrantPermissions(userName string, permissions []string) (*iface.OneAdminRequestStruct, error) {
-	w.m.Lock()
-	defer w.m.Unlock()
-	admin, k := w.findUser(userName)
-	if admin == nil {
-		newAdmin, err := w.addAdmin(userName, permissions)
-		if err != nil {
-			return nil, err
-		}
-		return newAdmin, nil
+func (afw *AdminFileWorker) GrantPermissions(userName string, permissions []string) (*iface.AdminRequestStruct, error) {
+	afw.lock.Lock()
+	defer afw.lock.Unlock()
+	a := afw.admins.findAdmin(userName)
+	if a == nil {
+		a = &Admin{Name: userName, Permissions: permissions}
+		afw.admins = append(afw.admins, *a)
+	} else {
+		fmt.Println("before", a)
+		a.grant(permissions)
+		fmt.Println("after", a)
 	}
-	w.grant(admin, permissions)
-	w.Admins[k] = *admin
-	err := w.saveFile()
-	if err != nil {
-		return nil, err
-	}
-	return &w.Admins[k], nil
+	fmt.Println(afw.admins)
+	afw.save()
+	return (*iface.AdminRequestStruct)(a), nil
 }
 
 //RevokePermissions - revoke user permissions (delete it from permission entry)
-func (w *PermissionWorker) RevokePermissions(userName string, permissions []string) (*iface.OneAdminRequestStruct, error) {
-	w.m.Lock()
-	defer w.m.Unlock()
-	admin, k := w.findUser(userName)
-	if admin == nil {
-		return nil, errors.New(userName + " isn't admin")
+func (afw *AdminFileWorker) RevokePermissions(userName string, permissions []string) (*iface.AdminRequestStruct, error) {
+	afw.lock.Lock()
+	defer afw.lock.Unlock()
+	a := afw.admins.findAdmin(userName)
+	if a == nil {
+		return nil, errors.New(fmt.Sprintf("%s is not admin", userName))
 	}
-	perms := w.revoke(admin, permissions)
-	if perms == nil {
-		err := w.deleteAdmin(admin)
-		return nil, err
+	if len(a.revokePerms(permissions)) == 0 {
+		afw.admins.deleteAdmin(a)
 	}
-	w.Admins[k] = *admin
-	err := w.saveFile()
-	if err != nil {
-		return nil, err
-	}
-	return &w.Admins[k], nil
-}
-
-//addAdmin - create new admin
-func (w *PermissionWorker) addAdmin(userName string, permissions []string) (*iface.OneAdminRequestStruct, error) {
-	newAdmin := iface.OneAdminRequestStruct{Name: userName, Permissions: permissions}
-	w.Admins = append(w.Admins, newAdmin)
-	err := w.saveFile()
-	if err != nil {
-		return nil, err
-	}
-	return &newAdmin, nil
+	afw.save()
+	return (*iface.AdminRequestStruct)(a), nil
 }
 
 //grant - add permissions to admin
-func (w *PermissionWorker) grant(admin *iface.OneAdminRequestStruct, permissions []string) {
-	for _, newPerm := range permissions {
-		alreadyHasPerm := false
-		for _, ep := range admin.Permissions {
-			if newPerm == ep {
-				alreadyHasPerm = true
-				break
-			}
-		}
-		if !alreadyHasPerm {
-			admin.Permissions = append(admin.Permissions, newPerm)
+func (a *Admin) grant(permissions []string) {
+	for _, v := range permissions {
+		if !a.checkPermission(v) {
+			a.Permissions = append(a.Permissions, v)
 		}
 	}
+	fmt.Println(a)
 }
 
 //revoke - delete permissions, or delete admin if we delete all admins permissions
-func (w *PermissionWorker) revoke(admin *iface.OneAdminRequestStruct, permissions []string) []string {
-	for _, revokePerm := range permissions {
-		for i, ep := range admin.Permissions {
-			if revokePerm == ep {
-				if len(admin.Permissions) == 1 {
-					admin.Permissions = nil
-					break
-				} else {
-					admin.Permissions = append(admin.Permissions[:i], admin.Permissions[i+1:]...)
-				}
-			}
+func (a *Admin) revokePerms(permissions []string) []string {
+	for _, v := range permissions {
+		a.revoke(v)
+	}
+	return a.Permissions
+}
+
+func (a *Admin) revoke(p string) []string {
+	for i, v := range a.Permissions {
+		if v == p {
+			a.Permissions[i] = a.Permissions[len(a.Permissions)-1]
+			a.Permissions = a.Permissions[:len(a.Permissions)-1]
+			break
 		}
 	}
-	return admin.Permissions
+	return a.Permissions
 }
 
 //deleteAdmin - delete admin from json
-func (w *PermissionWorker) deleteAdmin(admin *iface.OneAdminRequestStruct) error {
-	if len(w.Admins) == 1 {
-		w.Admins = []iface.OneAdminRequestStruct{}
-	} else {
-		_, k := w.findUser(admin.Name)
-		w.Admins = append(w.Admins[:k], w.Admins[k+1:]...)
-	}
-	err := w.saveFile()
-	if err != nil {
-		return err
+func (a *Admins) deleteAdmin(admin *Admin) error {
+	for i, v := range *a {
+		if &v == admin {
+			(*a)[i] = (*a)[len(*a)-1]
+			(*a) = (*a)[:len(*a)-1]
+			break
+		}
 	}
 	return nil
 }
 
 //FindUser - find user entry in permission
-func (w PermissionWorker) findUser(userName string) (*iface.OneAdminRequestStruct, int) {
-	for k, admin := range w.Admins {
-		if admin.Name == userName {
-			return &admin, k
+func (a *Admins) findAdmin(userName string) *Admin {
+	for _, v := range *a {
+		if v.Name == userName {
+			return &v
 		}
 	}
-	return nil, -1
+	return nil
 }
 
 //saveFile - save json with admins info inti json file
-func (w *PermissionWorker) saveFile() error {
-	js, err := json.Marshal(w.Admins)
+func (afw *AdminFileWorker) save() error {
+	fmt.Println(afw.admins)
+	js, err := json.Marshal(afw.admins)
 	if err != nil {
+		// Заменяем данные в опертаивке на начальный слепок, до редактуры
 		return errors.New("marshaling error")
 	}
 	err = ioutil.WriteFile(config.PermFile, js, 0644)
 	if err != nil {
+		// Заменяем данные в опертаивке на начальный слепок, до редактуры
+		log.Fatal(err)
 		return err
 	}
+	//если все прошло успешно, заменяем слепок на новый с отредактированными данными
 	return nil
 }
