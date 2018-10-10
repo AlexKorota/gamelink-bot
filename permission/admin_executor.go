@@ -52,7 +52,10 @@ func NewPermissionWorker() (iface.AdminExecutor, error) {
 		return nil, err
 	}
 	var admins []iface.OneAdminRequestStruct
-	json.Unmarshal(bytes, &admins)
+	err = json.Unmarshal(bytes, &admins)
+	if err != nil {
+		return nil, err
+	}
 	return &PermissionWorker{Admins: admins}, nil
 }
 
@@ -94,7 +97,6 @@ func (w PermissionWorker) HasPermissions(userName string, permissions []string) 
 
 //GrantPermissions - update/create permissions entry for user
 func (w *PermissionWorker) GrantPermissions(userName string, permissions []string) (*iface.OneAdminRequestStruct, error) {
-	fmt.Println("grant")
 	admin, k := w.findUser(userName)
 	w.m.RLock()
 	defer w.m.RUnlock()
