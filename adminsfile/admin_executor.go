@@ -31,7 +31,11 @@ func init() {
 }
 
 func (a *Admin) grantPermission(p []string) {
-	a.Permissions = append(a.Permissions, p...)
+	for _, v := range p {
+		if !a.checkPermission(v) {
+			a.Permissions = append(a.Permissions, p...)
+		}
+	}
 }
 
 func (a *Admin) revokePermission(p string) []string {
@@ -52,15 +56,18 @@ func (a *Admin) revokePermissions(p []string) []string {
 	return a.Permissions
 }
 
-func (a *Admin) checkPermission(pp []string) bool {
-	for _, rp := range pp {
-		hasPerm := false
-		for _, hp := range a.Permissions {
-			if rp == hp {
-				hasPerm = true
-			}
+func (a *Admin) checkPermission(p string) bool {
+	for _, hp := range a.Permissions {
+		if p == hp {
+			return true
 		}
-		if !hasPerm {
+	}
+	return false
+}
+
+func (a *Admin) checkPermissions(pp []string) bool {
+	for _, rp := range pp {
+		if !a.checkPermission(rp) {
 			return false
 		}
 	}
