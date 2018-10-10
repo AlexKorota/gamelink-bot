@@ -3,6 +3,7 @@ package permission
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gamelinkBot/admincmd"
 	"gamelinkBot/config"
 	"gamelinkBot/iface"
@@ -17,7 +18,7 @@ import (
 type (
 	//PermissionWorker - strucnt for work with MongoDB
 	PermissionWorker struct {
-		Admins iface.ManyAdminsStruct `json:"admins"`
+		Admins []iface.OneAdminRequestStruct `json:"admins"`
 		m      sync.RWMutex
 	}
 )
@@ -50,7 +51,7 @@ func NewPermissionWorker() (iface.AdminExecutor, error) {
 	if err != nil {
 		return nil, err
 	}
-	var admins iface.ManyAdminsStruct
+	var admins []iface.OneAdminRequestStruct
 	json.Unmarshal(bytes, &admins)
 	return &PermissionWorker{Admins: admins}, nil
 }
@@ -93,10 +94,13 @@ func (w PermissionWorker) HasPermissions(userName string, permissions []string) 
 
 //GrantPermissions - update/create permissions entry for user
 func (w *PermissionWorker) GrantPermissions(userName string, permissions []string) (*iface.OneAdminRequestStruct, error) {
+	fmt.Println("grant")
 	admin, k := w.findUser(userName)
+	w.m.RLock()
+	defer w.m.RUnlock()
 	if admin == nil {
 		newAdmin := iface.OneAdminRequestStruct{Name: userName, Permissions: permissions}
-		w.Admins.Admins = append(w.Admins.Admins, newAdmin)
+		w.Admins = append(w.Admins, newAdmin)
 		err := w.saveFile()
 		if err != nil {
 			return nil, err
@@ -115,21 +119,22 @@ func (w *PermissionWorker) GrantPermissions(userName string, permissions []strin
 			admin.Permissions = append(admin.Permissions, newPerm)
 		}
 	}
-	w.Admins.Admins[k] = *admin
+	w.Admins[k] = *admin
 	err := w.saveFile()
 	if err != nil {
 		return nil, err
 	}
-	return &w.Admins.Admins[k], nil
+	return &w.Admins[k], nil
 }
 
 //RevokePermissions - revoke user permissions (delete it from permission entry)
 func (w *PermissionWorker) RevokePermissions(userName string, permissions []string) (*iface.OneAdminRequestStruct, error) {
-
 	admin, k := w.findUser(userName)
 	if admin == nil {
 		return nil, errors.New(userName + " isn't admin")
 	}
+	w.m.RLock()
+	defer w.m.RUnlock()
 	for k, revokePerm := range permissions {
 		for i, ep := range admin.Permissions {
 			if revokePerm == ep {
@@ -142,34 +147,41 @@ func (w *PermissionWorker) RevokePermissions(userName string, permissions []stri
 			}
 		}
 		if admin.Permissions == nil {
-			if len(w.Admins.Admins) == 1 {
-				w.Admins.Admins = nil
-				err := w.saveFile()
-				if err != nil {
-					return nil, err
-				}
-				return nil, nil
-			} else {
-				w.Admins.Admins = append(w.Admins.Admins[:k], w.Admins.Admins[k+1:]...)
-				err := w.saveFile()
-				if err != nil {
-					return nil, err
-				}
-				return nil, nil
-			}
+			err := w.deleteAdmin(k)
+			return nil, err
 		}
 	}
-	w.Admins.Admins[k] = *admin
+	w.Admins[k] = *admin
 	err := w.saveFile()
 	if err != nil {
 		return nil, err
 	}
-	return &w.Admins.Admins[k], nil
+	return &w.Admins[k], nil
+}
+
+//deleteAdmin - delete admin from json
+func (w *PermissionWorker) deleteAdmin(k int) error {
+	if len(w.Admins) == 1 {
+		w.Admins = nil
+		err := w.saveFile()
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		w.Admins = append(w.Admins[:k], w.Admins[k+1:]...)
+		err := w.saveFile()
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 }
 
 //FindUser - find user entry in permission
 func (w PermissionWorker) findUser(userName string) (*iface.OneAdminRequestStruct, int) {
-	for k, admin := range w.Admins.Admins {
+	for k, admin := range w.Admins {
+		fmt.Println(admin.Name + "------" + userName)
 		if admin.Name == userName {
 			return &admin, k
 		}
@@ -179,19 +191,13 @@ func (w PermissionWorker) findUser(userName string) (*iface.OneAdminRequestStruc
 
 //saveFile - save json with admins info inti json file
 func (w *PermissionWorker) saveFile() error {
-	w.m.RLock()
-	defer w.m.RUnlock()
-	_, err := os.OpenFile(config.PermFile, os.O_RDWR, os.ModeAppend)
-	if err != nil {
-		return err
-	}
 	js, err := json.Marshal(w.Admins)
 	if err != nil {
 		return errors.New("marshaling error")
 	}
 	err = ioutil.WriteFile(config.PermFile, js, 0644)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	return nil
 }

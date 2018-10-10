@@ -60,10 +60,6 @@ type (
 		Name        string   `json:"name"` //UserName
 		Permissions []string `json:"perms"`
 	}
-	//ManyAdminsStruct - strucet for many admins from admin file
-	ManyAdminsStruct struct {
-		Admins []OneAdminRequestStruct `json:"admins"`
-	}
 
 	//PermissionController - interface for adding and revoke users permissions
 	PermissionController interface {
