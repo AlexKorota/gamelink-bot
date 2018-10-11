@@ -27,31 +27,23 @@ type (
 	}
 )
 
+var adminsReserveCopy Admins
+
 //init - add AdminFileWorker(permChecker) to parser, create permfile if not exist
 func init() {
 	w := &AdminFileWorker{}
-	if _, err := os.Stat(config.PermFile); os.IsNotExist(err) {
-		w.create()
-	} else {
-		w.load()
-	}
+	w.load()
 	parser.SharedParser().SetChecker(w)
 	admincmd.SetExecutor(w)
 }
 
-//create - create new permissions file
-func (afw *AdminFileWorker) create() {
-	log.Print("create new file")
-	jfile, err := os.Create(config.PermFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	jfile.Close()
-}
-
 //load - load data from permission file to worker struct
 func (afw *AdminFileWorker) load() {
-	f, err := os.OpenFile(config.PermFile, os.O_RDWR, os.ModeAppend)
+	f, err := os.OpenFile(config.PermFile, os.O_RDWR|os.O_CREATE, os.ModeAppend)
+	err = os.Chmod(config.PermFile, 0777)
+	if err != nil {
+		return
+	}
 	defer f.Close()
 	if err != nil {
 		return
@@ -61,6 +53,10 @@ func (afw *AdminFileWorker) load() {
 		return
 	}
 	err = json.Unmarshal(bytes, &afw.admins)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(bytes, &adminsReserveCopy)
 	if err != nil {
 		return
 	}
@@ -119,12 +115,12 @@ func (afw *AdminFileWorker) GrantPermissions(userName string, permissions []stri
 		a = &Admin{Name: userName, Permissions: permissions}
 		afw.admins = append(afw.admins, *a)
 	} else {
-		fmt.Println("before", a)
 		a.grant(permissions)
-		fmt.Println("after", a)
 	}
-	fmt.Println(afw.admins)
-	afw.save()
+	err := afw.save()
+	if err != nil {
+		return nil, err
+	}
 	return (*iface.AdminRequestStruct)(a), nil
 }
 
@@ -139,7 +135,10 @@ func (afw *AdminFileWorker) RevokePermissions(userName string, permissions []str
 	if len(a.revokePerms(permissions)) == 0 {
 		afw.admins.deleteAdmin(a)
 	}
-	afw.save()
+	err := afw.save()
+	if err != nil {
+		return nil, err
+	}
 	return (*iface.AdminRequestStruct)(a), nil
 }
 
@@ -150,7 +149,6 @@ func (a *Admin) grant(permissions []string) {
 			a.Permissions = append(a.Permissions, v)
 		}
 	}
-	fmt.Println(a)
 }
 
 //revoke - delete permissions, or delete admin if we delete all admins permissions
@@ -174,8 +172,8 @@ func (a *Admin) revoke(p string) []string {
 
 //deleteAdmin - delete admin from json
 func (a *Admins) deleteAdmin(admin *Admin) error {
-	for i, v := range *a {
-		if &v == admin {
+	for i, _ := range *a {
+		if (*a)[i].Name == admin.Name {
 			(*a)[i] = (*a)[len(*a)-1]
 			(*a) = (*a)[:len(*a)-1]
 			break
@@ -186,9 +184,9 @@ func (a *Admins) deleteAdmin(admin *Admin) error {
 
 //FindUser - find user entry in permission
 func (a *Admins) findAdmin(userName string) *Admin {
-	for _, v := range *a {
-		if v.Name == userName {
-			return &v
+	for i, _ := range *a {
+		if (*a)[i].Name == userName {
+			return &(*a)[i]
 		}
 	}
 	return nil
@@ -196,18 +194,34 @@ func (a *Admins) findAdmin(userName string) *Admin {
 
 //saveFile - save json with admins info inti json file
 func (afw *AdminFileWorker) save() error {
-	fmt.Println(afw.admins)
 	js, err := json.Marshal(afw.admins)
 	if err != nil {
 		// Заменяем данные в опертаивке на начальный слепок, до редактуры
+		afw.revertChanges()
 		return errors.New("marshaling error")
 	}
 	err = ioutil.WriteFile(config.PermFile, js, 0644)
 	if err != nil {
 		// Заменяем данные в опертаивке на начальный слепок, до редактуры
+		afw.revertChanges()
 		log.Fatal(err)
 		return err
 	}
 	//если все прошло успешно, заменяем слепок на новый с отредактированными данными
+	afw.updateReserveCopy()
 	return nil
+}
+
+//revertChanges - revert afw changes to initial state before grant or revoke
+func (afw *AdminFileWorker) revertChanges() {
+	afw.admins = nil
+	afw.admins = make([]Admin, len(adminsReserveCopy))
+	copy(afw.admins, adminsReserveCopy)
+}
+
+//updateReserveCopy - update reserve copy after success WriteFile
+func (afw *AdminFileWorker) updateReserveCopy() {
+	adminsReserveCopy = nil
+	adminsReserveCopy = make([]Admin, len(afw.admins))
+	copy(adminsReserveCopy, afw.admins)
 }
