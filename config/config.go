@@ -53,14 +53,15 @@ func LoadEnvironment() {
 	if err != nil {
 		log.Warning(err.Error())
 	}
-	DialAddress = os.Getenv(dialAddrKey)
-	if DialAddress == "" {
-		log.Fatal("server address must be set")
-	}
+	//DialAddress = os.Getenv(dialAddrKey)
+	//if DialAddress == "" {
+	//	log.Fatal("server address must be set")
+	//}
 	TBotToken = os.Getenv(telegramToken)
 	if TBotToken == "" {
 		log.Fatal("telegram token must be set")
 	}
+  
 	SA := os.Getenv(superAdmin)
 	if SA == "" {
 		log.Fatal("should be at least one super admin")
