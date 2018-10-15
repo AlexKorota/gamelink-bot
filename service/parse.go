@@ -47,7 +47,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	deviceRegexp, err = regexp.Compile("(((device)\\s*(=\\s*(ios|android)$)))")
+	deviceRegexp, err = regexp.Compile("(((device_os)\\s*(=\\s*(ios|android)$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
