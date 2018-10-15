@@ -22,12 +22,11 @@ type (
 	Admins []Admin
 	//AdminFileWorker - strucnt for work with MongoDB
 	AdminFileWorker struct {
-		admins Admins `json:"admins"`
-		lock   sync.RWMutex
+		admins            Admins `json:"admins"`
+		adminsReserveCopy Admins
+		lock              sync.RWMutex
 	}
 )
-
-var adminsReserveCopy Admins
 
 //init - add AdminFileWorker(permChecker) to parser, create permfile if not exist
 func init() {
@@ -56,10 +55,8 @@ func (afw *AdminFileWorker) load() {
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(bytes, &adminsReserveCopy)
-	if err != nil {
-		return
-	}
+	afw.adminsReserveCopy = make([]Admin, len(afw.admins))
+	copy(afw.adminsReserveCopy, afw.admins)
 }
 
 //IsAdmin - check if user is superAdmin
@@ -214,14 +211,12 @@ func (afw *AdminFileWorker) save() error {
 
 //revertChanges - revert afw changes to initial state before grant or revoke
 func (afw *AdminFileWorker) revertChanges() {
-	afw.admins = nil
-	afw.admins = make([]Admin, len(adminsReserveCopy))
-	copy(afw.admins, adminsReserveCopy)
+	afw.admins = make([]Admin, len(afw.adminsReserveCopy))
+	copy(afw.admins, afw.adminsReserveCopy)
 }
 
 //updateReserveCopy - update reserve copy after success WriteFile
 func (afw *AdminFileWorker) updateReserveCopy() {
-	adminsReserveCopy = nil
-	adminsReserveCopy = make([]Admin, len(afw.admins))
-	copy(adminsReserveCopy, afw.admins)
+	afw.adminsReserveCopy = make([]Admin, len(afw.admins))
+	copy(afw.adminsReserveCopy, afw.admins)
 }
