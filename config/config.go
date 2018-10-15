@@ -15,10 +15,8 @@ var (
 	TBotToken string
 	//SuperAdmin - telegram username of superadmin
 	SuperAdmin []string
-	//mongoAddrKey - network addres for mongoDB
-	MongoAddr string
-	//mongoDBName
-	MongoDBName string
+	//PermFIle - permissions filename
+	PermFile string
 )
 
 const (
@@ -27,8 +25,7 @@ const (
 	dialAddrKey   = "DIALADDR"
 	telegramToken = "TTOKEN"
 	superAdmin    = "SADMIN"
-	mongoAddr     = "MONGOADDR"
-	mongoDBName   = "MONGODBNAME"
+	permFile      = "PERMFILE"
 )
 
 func init() {
@@ -64,18 +61,14 @@ func LoadEnvironment() {
 	if TBotToken == "" {
 		log.Fatal("telegram token must be set")
 	}
-	//SA := os.Getenv(superAdmin)
-	//if SA == "" {
-	//	log.Fatal("should be at least one super admin")
-	//}
-	//SuperAdmin = strings.Split(SA, ",")
-	//
-	//MongoAddr = os.Getenv(mongoAddr)
-	//if MongoAddr == "" {
-	//	log.Fatal("mongo address must be set")
-	//}
-	//MongoDBName = os.Getenv(mongoDBName)
-	//if MongoAddr == "" {
-	//	log.Fatal("mongo DB name must be set")
-	//}
+  
+	SA := os.Getenv(superAdmin)
+	if SA == "" {
+		log.Fatal("should be at least one super admin")
+	}
+	SuperAdmin = strings.Split(SA, ",")
+	PermFile = os.Getenv(permFile)
+	if PermFile == "" {
+		log.Fatal("permission filename must be set")
+	}
 }
