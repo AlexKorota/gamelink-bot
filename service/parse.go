@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp, adsRegexp, paymentRegexp *regexp.Regexp
-	UnknownCommandError                                                                                                                               error
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp, adsRegexp, paymentRegexp, deviceRegexp *regexp.Regexp
+	UnknownCommandError                                                                                                                                             error
 )
 
 func init() {
@@ -43,6 +43,11 @@ func init() {
 	}
 
 	paymentRegexp, err = regexp.Compile("(((made_payment)\\s*(=\\s*(0|1)$)))")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	deviceRegexp, err = regexp.Compile("(((device)\\s*(=\\s*(ios|android)$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,6 +111,11 @@ func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg
 			continue
 		}
 		matches = paymentRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
+			continue
+		}
+		matches = deviceRegexp.FindStringSubmatch(v)
 		if matches != nil {
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
