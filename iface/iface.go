@@ -18,7 +18,7 @@ type (
 	//Response - interface for getting response info
 	Response interface {
 		Response() string //text message
-		ChatId() int64
+		ChatId() string
 	}
 	//RequesterResponder - interface for RequesterResponder
 	RequesterResponder interface {

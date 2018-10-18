@@ -22,7 +22,7 @@ type (
 	Admins []Admin
 	//AdminFileWorker - strucnt for work with MongoDB
 	AdminFileWorker struct {
-		admins            Admins `json:"admins"`
+		admins            Admins
 		adminsReserveCopy Admins
 		lock              sync.RWMutex
 	}
