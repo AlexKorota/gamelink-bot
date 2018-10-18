@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gamelinkBot/config"
 	"gamelinkBot/iface"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 )
 
 type (
@@ -84,7 +84,7 @@ func (b Bot) RequesterResponderWithContext(ctx context.Context) (<-chan iface.Re
 		b.r = mux.NewRouter()
 		b.r.HandleFunc("/webhook", b.verificationEndpoint).Methods("GET")
 		b.r.HandleFunc("/webhook", b.messagesEndpoint).Methods("POST")
-		err := http.ListenAndServe("localhost:8088", b.r)
+		err := http.ListenAndServe(config.BotAddr, b.r)
 		if err != nil {
 			log.Fatal(err)
 			close(rrchan)
@@ -101,12 +101,10 @@ func (b Bot) verificationEndpoint(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("hub.verify_token")
 	fmt.Println("mode", mode)
 	fmt.Println("token", token)
-	if mode != "" && token == "qqqwww" {
+	if mode != "" && token == config.FbVToken {
 		w.WriteHeader(200)
 		w.Write([]byte(challenge))
 	} else {
-		fmt.Println(mode)
-		fmt.Println("t", os.Getenv("VERIFY_TOKEN"))
 		w.WriteHeader(404)
 		w.Write([]byte("Error, wrong validation token!!!!"))
 	}
@@ -131,7 +129,6 @@ func (b Bot) messagesEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b Bot) Respond(r iface.Response) error {
-	fmt.Println("resp", r)
 	if r.Response() == "" {
 		return nil
 	}
@@ -144,10 +141,9 @@ func (b Bot) Respond(r iface.Response) error {
 			Text: r.Response(),
 		},
 	}
-	fmt.Println("resp", response)
 	body := new(bytes.Buffer)
 	json.NewEncoder(body).Encode(&response)
-	url := "https://graph.facebook.com/v2.6/me/messages?access_token=EAADgsjzTwy4BABdmGjqQHrHcmVkrq9QQpZCvRGGQXl0tjxn1wDmv5z6i7CuZAqNxv6u4MdL50INZBPSCR9c4XwEdKM4ZCMk3JZAREM8S9por325fZAEZANz59iclrPhDZBytaeaV46gf67OKp6dIJiQSQqNt994kCpGlI5NSUM7m7QZDZD"
+	url := fmt.Sprintf("https://graph.facebook.com/v2.6/me/messages?access_token=%s", config.FbAToken)
 	req, err := http.NewRequest("POST", url, body)
 	req.Header.Add("Content-Type", "application/json")
 	if err != nil {

@@ -17,6 +17,12 @@ var (
 	SuperAdmin []string
 	//PermFIle - permissions filename
 	PermFile string
+	//FbVToken -fb verify token
+	FbVToken string
+	//FbAToken - fb access token
+	FbAToken string
+	//BotAddr - bot addr
+	BotAddr string
 )
 
 const (
@@ -26,6 +32,9 @@ const (
 	telegramToken = "TTOKEN"
 	superAdmin    = "SADMIN"
 	permFile      = "PERMFILE"
+	fbVerifyToken = "VTOKEN"
+	fbAccessToken = "ATOKEN"
+	botAddr       = "BOTADDR"
 )
 
 func init() {
@@ -57,11 +66,11 @@ func LoadEnvironment() {
 	if DialAddress == "" {
 		log.Fatal("server address must be set")
 	}
-
-	TBotToken = os.Getenv(telegramToken)
-	if TBotToken == "" {
-		log.Fatal("telegram token must be set")
-	}
+	//
+	//TBotToken = os.Getenv(telegramToken)
+	//if TBotToken == "" {
+	//	log.Fatal("telegram token must be set")
+	//}
 
 	SA := os.Getenv(superAdmin)
 	if SA == "" {
@@ -72,4 +81,21 @@ func LoadEnvironment() {
 	if PermFile == "" {
 		log.Fatal("permission filename must be set")
 	}
+
+	//--------fb--------------------------------------------------------------
+	FbAToken = os.Getenv(fbAccessToken)
+	if FbAToken == "" {
+		log.Fatal("fb access token must be set")
+	}
+
+	FbVToken = os.Getenv(fbVerifyToken)
+	if FbVToken == "" {
+		log.Fatal("fb access token must be set")
+	}
+
+	BotAddr = os.Getenv(botAddr)
+	if BotAddr == "" {
+		log.Fatal("bot addr must be set")
+	}
+	//--------fb-end----------------------------------------------------------v
 }
