@@ -6,6 +6,7 @@ import (
 	"github.com/Syfaro/telegram-bot-api"
 	log "github.com/sirupsen/logrus"
 	"reflect"
+	"strconv"
 )
 
 type (
@@ -87,7 +88,7 @@ func (b Bot) Respond(r iface.Response) error {
 	if r.Response() == "" {
 		return nil
 	}
-	msg := tgbotapi.NewMessage(r.ChatId(), r.Response())
+	msg := tgbotapi.NewMessage(r.ChatId(), r.Response()) // dat was changed cause fb got string id
 	msg.ParseMode = "HTML"
 	_, err := b.bot.Send(msg)
 	return err
@@ -105,8 +106,9 @@ func (rt RoundTrip) UserName() string {
 }
 
 //ChatId - return chat id
-func (rt RoundTrip) ChatId() int64 {
-	return rt.chatId
+func (rt RoundTrip) ChatId() string {
+	id := strconv.Itoa(int(rt.chatId))
+	return id
 }
 
 //Response - return response string
