@@ -27,7 +27,7 @@ func main() {
 	var err error
 	reactor := viber.NewBot() // ---------------------- viber bot
 	//reactor := fb.NewBot() //-------------------------- fb bot
-	//reactor, err := telegram.NewBot(config.TBotToken) // telegram bot
+	//reactor, err := telegram.NewBot(config.TBotToken) // telegram bot - need to change iface ChatId() to int64
 	if err != nil {
 		log.Fatal(err)
 	}
