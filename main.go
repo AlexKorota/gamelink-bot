@@ -1,13 +1,14 @@
 package main
 
 import (
-	_ "gamelinkBot/admincmd"
-	"gamelinkBot/config"
-	_ "gamelinkBot/generalcmd"
-	"gamelinkBot/parser"
-	_ "gamelinkBot/permission"
-	_ "gamelinkBot/rpc"
-	"gamelinkBot/telegram"
+	_ "gamelink-bot/admincmd"
+	"gamelink-bot/config"
+	_ "gamelink-bot/generalcmd"
+	"gamelink-bot/parser"
+	_ "gamelink-bot/permission"
+	_ "gamelink-bot/rpc"
+	"gamelink-bot/telegram"
+	"gamelink-bot/version"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
@@ -22,7 +23,10 @@ func init() {
 }
 
 func main() {
-	log.Warn("starting...")
+	log.Printf(
+		"Starting the service: commit: %s, build time: %s, release: %s",
+		version.Commit, version.BuildTime, version.Release,
+	)
 	reactor, err := telegram.NewBot(config.TBotToken)
 	if err != nil {
 		log.Fatal(err)

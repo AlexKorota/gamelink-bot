@@ -1,7 +1,7 @@
 package generalcmd
 
 import (
-	"gamelinkBot/iface"
+	"gamelink-bot/iface"
 	"sync"
 )
 

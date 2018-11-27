@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
+	"gamelink-bot/command_list"
 	msg "gamelink-go/proto_msg"
-	"gamelinkBot/command_list"
 	"log"
 	"regexp"
 	"strconv"

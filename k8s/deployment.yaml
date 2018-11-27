@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gamelink-bot
+  labels:
+    app: gamelink-bot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gamelink-bot
+    spec:
+      containers:
+        - name: gamelink-bot
+          image: 'mrcarrot/gamelink-bot:latest'
+          env:
+          - name: GRPCPORT
+            valueFrom:
+              configMapKeyRef:
+                name: gamelink-config
+                key: GRPCPORT
+          - name: TTOKEN
+            valueFrom:
+              secretKeyRef:
+                name: gamelink-bot-secret
+                key: TTOKEN
+          - name: SADMIN
+            valueFrom:
+              configMapKeyRef:
+                name: gamelink-bot-config
+                key: SADMIN
+          - name: PERMFILE
+            valueFrom:
+              configMapKeyRef:
+                name: gamelink-bot-config
+                key: PERMFILE
+#        ports:
+#          - containerPort: 7777 это ж порт жрпц....место ли ему тут, в боте контейнере бота?
+#            name: http

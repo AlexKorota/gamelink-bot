@@ -2,11 +2,11 @@ package rpc
 
 import (
 	"context"
+	"gamelink-bot/config"
+	"gamelink-bot/generalcmd"
+	"gamelink-bot/iface"
 	msg "gamelink-go/proto_msg"
 	service "gamelink-go/proto_service"
-	"gamelinkBot/config"
-	"gamelinkBot/generalcmd"
-	"gamelinkBot/iface"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -23,7 +23,7 @@ func init() {
 }
 
 func NewRpcWorker() iface.GeneralExecutor {
-	conn, err := grpc.Dial(config.DialAddress, grpc.WithInsecure())
+	conn, err := grpc.Dial(config.GRPCDialAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
 	}

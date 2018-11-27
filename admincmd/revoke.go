@@ -2,10 +2,10 @@ package admincmd
 
 import (
 	"context"
-	"gamelinkBot/command_list"
-	"gamelinkBot/iface"
-	"gamelinkBot/parser"
-	"gamelinkBot/service"
+	"gamelink-bot/command_list"
+	"gamelink-bot/iface"
+	"gamelink-bot/parser"
+	"gamelink-bot/service"
 	"strings"
 )
 

@@ -2,7 +2,7 @@ package parser
 
 import (
 	"errors"
-	"gamelinkBot/iface"
+	"gamelink-bot/iface"
 	log "github.com/sirupsen/logrus"
 	"sync"
 )

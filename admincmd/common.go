@@ -1,7 +1,7 @@
 package admincmd
 
 import (
-	"gamelinkBot/iface"
+	"gamelink-bot/iface"
 	"sync"
 )
 

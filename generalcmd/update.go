@@ -2,11 +2,11 @@ package generalcmd
 
 import (
 	"context"
+	"gamelink-bot/command_list"
+	"gamelink-bot/iface"
+	"gamelink-bot/parser"
+	"gamelink-bot/service"
 	msg "gamelink-go/proto_msg"
-	"gamelinkBot/command_list"
-	"gamelinkBot/iface"
-	"gamelinkBot/parser"
-	"gamelinkBot/service"
 )
 
 type (

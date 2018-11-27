@@ -2,7 +2,7 @@ package telegram
 
 import (
 	"context"
-	"gamelinkBot/iface"
+	"gamelink-bot/iface"
 	"github.com/Syfaro/telegram-bot-api"
 	log "github.com/sirupsen/logrus"
 	"reflect"

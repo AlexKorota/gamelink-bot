@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gamelink-bot-config
+  namespace: default
+data:
+#  DIALADDR: "gamelink:7777"
+  SADMIN: "mrcarrot1848"
+  PERMFILE: "permissions.json"

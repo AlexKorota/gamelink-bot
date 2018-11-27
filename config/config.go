@@ -10,7 +10,7 @@ import (
 
 var (
 	//DiaAddress - on following address client should dial to server
-	DialAddress string
+	GRPCDialAddress string
 	//TBotToken - telegram bot token
 	TBotToken string
 	//SuperAdmin - telegram username of superadmin
@@ -20,12 +20,12 @@ var (
 )
 
 const (
-	modeKey       = "MODE"
-	devMode       = "development"
-	dialAddrKey   = "DIALADDR"
-	telegramToken = "TTOKEN"
-	superAdmin    = "SADMIN"
-	permFile      = "PERMFILE"
+	modeKey         = "MODE"
+	devMode         = "development"
+	grpcDialAddrKey = "GRPCPORT"
+	telegramToken   = "TTOKEN"
+	superAdmin      = "SADMIN"
+	permFile        = "PERMFILE"
 )
 
 func init() {
@@ -53,8 +53,8 @@ func LoadEnvironment() {
 	if err != nil {
 		log.Warning(err.Error())
 	}
-	DialAddress = os.Getenv(dialAddrKey)
-	if DialAddress == "" {
+	GRPCDialAddress = os.Getenv(grpcDialAddrKey)
+	if GRPCDialAddress == "" {
 		log.Fatal("server address must be set")
 	}
 	TBotToken = os.Getenv(telegramToken)

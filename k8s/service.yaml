@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: gamelink-bot
+  name: gamelink-bot
+spec:
+  ports:
+    - name: http
+      port: 90
+#      targetPort: 7777
+  selector:
+    app: gamelink-bot
