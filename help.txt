@@ -43,6 +43,7 @@
        |                          age|country|deleted         |
        --------------------------------------------------------
 
+
 3. Синтаксис команд
     - Все команды, используемые ботом должны начинаться со знака "/". Например: /count
     - Команда суперадминистратора: /command @username[param1|param2|...|paramN] Например: /grant_permissions @ivanovivan[send_push|count|find]
