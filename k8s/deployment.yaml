@@ -15,11 +15,11 @@ spec:
         - name: gamelink-bot
           image: 'mrcarrot/gamelink-bot:latest'
           env:
-          - name: GRPCPORT
+          - name: DIALADDR
             valueFrom:
               configMapKeyRef:
-                name: gamelink-config
-                key: GRPCPORT
+                name: gamelink-bot-config
+                key: DIALADDR
           - name: TTOKEN
             valueFrom:
               secretKeyRef:
@@ -35,6 +35,3 @@ spec:
               configMapKeyRef:
                 name: gamelink-bot-config
                 key: PERMFILE
-#        ports:
-#          - containerPort: 7777 это ж порт жрпц....место ли ему тут, в боте контейнере бота?
-#            name: http

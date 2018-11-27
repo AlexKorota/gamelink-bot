@@ -22,7 +22,7 @@ var (
 const (
 	modeKey         = "MODE"
 	devMode         = "development"
-	grpcDialAddrKey = "GRPCPORT"
+	grpcDialAddrKey = "DIALADDR"
 	telegramToken   = "TTOKEN"
 	superAdmin      = "SADMIN"
 	permFile        = "PERMFILE"

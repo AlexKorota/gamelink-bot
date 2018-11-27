@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp, adsRegexp, paymentRegexp, deviceRegexp *regexp.Regexp
-	UnknownCommandError                                                                                                                                             error
+	ageRegexp, idRegexp, sexRegexp, delRegexp, registrationRegexp, permissionRegexp, pushRegexp, updRegexp, updatedAtRegexp, adsRegexp, paymentRegexp, deviceRegexp, dummyRegexp *regexp.Regexp
+	UnknownCommandError                                                                                                                                                          error
 )
 
 func init() {
@@ -36,6 +36,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	dummyRegexp, err = regexp.Compile("(((dummy)\\s*(=\\s*(0|1)$)))")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	adsRegexp, err = regexp.Compile("(((watched_ads)\\s*(=\\s*(0|1)$)))")
 	if err != nil {
@@ -47,7 +51,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	deviceRegexp, err = regexp.Compile("(((device_os)\\s*(=\\s*(ios|android)$)))")
+	deviceRegexp, err = regexp.Compile("(((message_system)\\s*(=\\s*(apns|firebase)$)))")
 	if err != nil {
 		log.Fatal(err)
 	}
