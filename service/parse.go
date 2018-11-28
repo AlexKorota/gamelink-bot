@@ -109,6 +109,11 @@ func ParseRequest(params []string, cmd string) ([]*msg.OneCriteriaStruct, []*msg
 			appendToMultiCriteria(&multiCriteria, matches)
 			continue
 		}
+		matches = dummyRegexp.FindStringSubmatch(v)
+		if matches != nil {
+			appendToMultiCriteria(&multiCriteria, matches)
+			continue
+		}
 		matches = adsRegexp.FindStringSubmatch(v)
 		if matches != nil {
 			appendToMultiCriteria(&multiCriteria, matches)
